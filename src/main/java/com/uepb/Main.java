@@ -18,7 +18,7 @@ public class Main {
             }else if(token.type == TokenType.WHITE_SPACE){
                 System.out.print(' ');
             }else{
-                System.out.print(token.lexema);
+                System.out.print(token);
             }
         }
         

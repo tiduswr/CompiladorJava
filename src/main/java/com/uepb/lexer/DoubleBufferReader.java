@@ -10,7 +10,7 @@ import com.uepb.lexer.exceptions.ProgramReadException;
 
 public class DoubleBufferReader implements Closeable{
     
-    private final static int BUFFER_SIZE = 5;
+    private final static int BUFFER_SIZE = 3;
     private final static int BUFFER_COPIES = 2;
     private final static int BUFFER_TOTAL_SIZE = BUFFER_COPIES * BUFFER_SIZE;
     public final static int FILE_END = -1;
@@ -61,7 +61,7 @@ public class DoubleBufferReader implements Closeable{
         if(currentBuffer != this.currentBuffer){
             this.currentBuffer = currentBuffer;
 
-            int initialValue = currentBuffer * (BUFFER_SIZE - 1);
+            int initialValue = currentBuffer * (BUFFER_SIZE);
             int finalValue = BUFFER_SIZE * (currentBuffer + 1);
 
             for(int i = initialValue; i < finalValue; i++){
