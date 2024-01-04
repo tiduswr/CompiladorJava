@@ -10,7 +10,7 @@ import com.uepb.lexer.exceptions.ProgramReadException;
 
 public class DoubleBufferReader implements Closeable{
     
-    private final static int BUFFER_SIZE = 3;
+    private final static int BUFFER_SIZE = 20;
     private final static int BUFFER_COPIES = 2;
     private final static int BUFFER_TOTAL_SIZE = BUFFER_COPIES * BUFFER_SIZE;
     public final static int FILE_END = -1;
