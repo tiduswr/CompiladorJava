@@ -1,4 +1,4 @@
-package com.uepb.lexer;
+package com.uepb.token;
 
 public enum TokenType {
     // Palavras-chave

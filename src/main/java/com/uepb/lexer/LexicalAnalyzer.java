@@ -2,7 +2,9 @@ package com.uepb.lexer;
 
 import java.io.IOException;
 
-import com.uepb.lexer.exceptions.TokenNotRecognizedException;
+import com.uepb.token.Token;
+import com.uepb.token.TokenType;
+import com.uepb.token.exceptions.TokenNotRecognizedException;
 
 public class LexicalAnalyzer {
     
@@ -70,7 +72,7 @@ public class LexicalAnalyzer {
                         "" + c
                     );
                 }
-                throw new TokenNotRecognizedException("O caractere na posição " + reader.getCurrentChar() + " não foi reconhecido");
+                throw new TokenNotRecognizedException("O caractere '" + c + "' não foi reconhecido no buffer");
         }
 
     }

@@ -2,6 +2,8 @@ package com.uepb.lexer;
 
 import java.util.Map;
 
+import com.uepb.token.TokenType;
+
 public class Utils {
     
     private static final Map<String, TokenType> reservedWords = 

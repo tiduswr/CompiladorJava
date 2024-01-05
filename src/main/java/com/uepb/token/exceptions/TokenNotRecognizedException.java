@@ -1,4 +1,4 @@
-package com.uepb.lexer.exceptions;
+package com.uepb.token.exceptions;
 
 import java.io.IOException;
 

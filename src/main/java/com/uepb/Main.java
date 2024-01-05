@@ -3,8 +3,8 @@ package com.uepb;
 import java.io.IOException;
 
 import com.uepb.lexer.LexicalAnalyzer;
-import com.uepb.lexer.Token;
-import com.uepb.lexer.TokenType;
+import com.uepb.token.Token;
+import com.uepb.token.TokenType;
 
 public class Main {
     public static void main(String[] args) throws IOException {
