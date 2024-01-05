@@ -130,7 +130,7 @@ public class LexicalAnalyzer {
             char c = (char) readedChar;
             if(Character.isDigit(c)){
                 number.append(c);
-            }else if(c == '.' && !hasDecimalPoint){
+            }else if(!hasDecimalPoint && c == '.'){
                 number.append(c);
                 hasDecimalPoint = true;
             }else{
