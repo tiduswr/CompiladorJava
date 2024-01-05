@@ -15,6 +15,6 @@ O Compilador UEPB é um projeto que visa criar um compilador para uma linguagem 
 
 ```bash
 $ git clone https://github.com/tiduswr/CompiladorJava.git
-$ cd CompiladorJava
+$ cd CompiladorJava/<subproject_dir>
 $ mvn package
 $ java -jar target/compiler.java code_example.uepb
