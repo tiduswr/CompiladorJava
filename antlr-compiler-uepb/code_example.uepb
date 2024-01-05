@@ -1,0 +1,12 @@
+var x : int;
+var str : string;
+
+x = -23*(3+5.2);
+
+if(x =! 0){
+    while(x >= 0){
+        x = x - 1;
+    }
+}
+
+print(x);
