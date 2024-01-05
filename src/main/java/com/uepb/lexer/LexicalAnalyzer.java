@@ -36,11 +36,14 @@ public class LexicalAnalyzer {
 
             // Identifica palavras-chave e identificadores
             if(Character.isLetter(c)) return readIdentifier(c);
-
+            
             // Identifica números
             if(Character.isDigit(c)) return readNumber(c);
 
-            return readSpecialCharacters(c);
+            //Identifica caracteres especiais
+            if(Utils.isReservedChar(c)) return readSpecialCharacters(c);
+
+            throw new TokenNotRecognizedException("O caractere '" + c + "' não foi reconhecido no buffer");
         }
 
         return null;
@@ -66,13 +69,10 @@ public class LexicalAnalyzer {
                     TokenType.OP_NOT_EQUAL, 
                     TokenType.OP_DENIAL);
             default:
-                if(Utils.isReservedChar(c)){
-                    return new Token(
-                        Utils.reservedCharToTokenType(c),
-                        "" + c
-                    );
-                }
-                throw new TokenNotRecognizedException("O caractere '" + c + "' não foi reconhecido no buffer");
+                return new Token(
+                    Utils.reservedCharToTokenType(c),
+                    "" + c
+                );
         }
 
     }

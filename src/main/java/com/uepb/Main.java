@@ -9,7 +9,7 @@ import com.uepb.token.TokenType;
 public class Main {
     public static void main(String[] args) throws IOException {
         
-        LexicalAnalyzer lexer = new LexicalAnalyzer(args[0], false);
+        LexicalAnalyzer lexer = new LexicalAnalyzer(args[0], true);
 
         Token token;
         while ((token = lexer.readNextToken()) != null) {

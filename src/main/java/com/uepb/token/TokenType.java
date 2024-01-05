@@ -31,10 +31,11 @@ public enum TokenType {
     WHITE_SPACE,
     LINE_BREAK,
     COLON,
+    COMMA, // ,
     SEMICOLON, // ;
     OPEN_BRACE,  // {
     CLOSE_BRACE, // }
     OPEN_PAREN, // (
-    CLOSE_PAREN, // )
+    CLOSE_PAREN // )
 }
 
