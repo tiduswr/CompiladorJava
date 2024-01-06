@@ -46,7 +46,7 @@ public class LexicalAnalyzer {
             throw new TokenNotRecognizedException("O caractere '" + c + "' não foi reconhecido no buffer");
         }
 
-        return null;
+        return new Token(TokenType.EOF, null);
     }
 
     private Token readSpecialCharacters(char c) throws IOException, TokenNotRecognizedException{

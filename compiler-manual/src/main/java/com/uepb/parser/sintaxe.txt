@@ -1,0 +1,28 @@
+prog: listaComandos;
+
+listaComandos: (comando ';')*;
+
+comando: declaracao | atribuicao | if-decl | while | imprimir;
+
+tipo: 'int' | 'float' | 'string';
+
+expr_arit: termo (('+' | '-') termo)*;
+
+termo: fator (('*' | '/') fator)*;
+
+fator: IDENTIFICADOR | NUMERO | '(' expr_arit ')' | STRING;
+
+valor: expr_arit | STRING;
+
+declaracao: 'var' IDENTIFICADOR ':' tipo |
+            'var' IDENTIFICADOR ':' tipo '=' valor;
+
+atribuicao: IDENTIFICADOR '=' valor;
+
+expr_rel: expr_arit ('==' | '!=' | '<' | '>' | '<=' | '>=') expr_arit;
+
+if-decl: 'if' '(' expr_rel ')' '{' listaComandos '}' ( 'else' '{' listaComandos '}' )?;
+
+while: 'while' '(' expr_rel ')' '{' listaComandos '}';
+
+imprimir: 'print' '(' IDENTIFICADOR | STRING ')';

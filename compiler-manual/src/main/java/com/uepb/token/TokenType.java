@@ -5,6 +5,7 @@ public enum TokenType {
     PC_VAR,
     PC_INT,
     PC_FLOAT,
+    PC_STRING,
     PC_IF,
     PC_WHILE,
     PC_PRINT,
@@ -26,6 +27,7 @@ public enum TokenType {
     
     // Identificadores
     IDENTIFIER,
+    EOF,
 
     // Ponto e vírgula e chaves
     WHITE_SPACE,
