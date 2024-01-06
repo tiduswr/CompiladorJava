@@ -32,18 +32,17 @@ public class LexicalAnalyzer {
                 }else{
                     continue;
                 }
+            } else if (c == '"') {
+                return readString(c);
+            } else if (Character.isLetter(c)) {
+                return readIdentifier(c);
+            } else if (Character.isDigit(c)) {
+                return readNumber(c);
+            } else if (Utils.isReservedChar(c)) {
+                return readSpecialCharacters(c);
+            } else {
+                throw new TokenNotRecognizedException("O caractere '" + c + "' não foi reconhecido no buffer");
             }
-
-            // Identifica palavras-chave e identificadores
-            if(Character.isLetter(c)) return readIdentifier(c);
-            
-            // Identifica números
-            if(Character.isDigit(c)) return readNumber(c);
-
-            //Identifica caracteres especiais
-            if(Utils.isReservedChar(c)) return readSpecialCharacters(c);
-
-            throw new TokenNotRecognizedException("O caractere '" + c + "' não foi reconhecido no buffer");
         }
 
         return new Token(TokenType.EOF, null);
@@ -95,6 +94,39 @@ public class LexicalAnalyzer {
         }
 
     }
+
+    private Token readString(char initialChar) throws IOException, TokenNotRecognizedException {
+        StringBuilder str = new StringBuilder();
+        str.append(initialChar);
+    
+        int readedChar;
+        while ((readedChar = reader.readNextChar()) != DoubleBufferReader.FILE_END) {
+            char c = (char) readedChar;
+    
+            if (c == '"') {
+                str.append(c);
+                return new Token(TokenType.PC_STRING, str.toString());
+            } else if (c == '\\') {
+                int nextChar = reader.readNextChar();
+                if (nextChar == 'n') {
+                    str.append('\n');
+                } else if (nextChar == 't') {
+                    str.append('\t');
+                } else if (nextChar == '\\') {
+                    str.append('\\');
+                } else if (nextChar == '"') {
+                    str.append('"');
+                } else {
+                    throw new TokenNotRecognizedException("Sequência de escape inválida: \\" + (char) nextChar);
+                }
+            } else {
+                str.append(c);
+            }
+        }
+
+        throw new TokenNotRecognizedException("Fim de arquivo inesperado dentro de uma string.");
+    }
+    
 
     private Token readIdentifier(char initialChar) throws IOException{
         StringBuilder identifier = new StringBuilder();

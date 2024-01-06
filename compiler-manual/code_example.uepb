@@ -1,5 +1,5 @@
 var x : int;
-var str : string;
+var str : string = "Aquele seu \"Amigo\" é engraçado";
 
 x = -23*(3+5.2);
 

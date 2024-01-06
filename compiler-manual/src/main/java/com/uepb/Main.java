@@ -12,7 +12,7 @@ public class Main {
         LexicalAnalyzer lexer = new LexicalAnalyzer(args[0], true);
 
         Token token;
-        while ((token = lexer.readNextToken()) != null) {
+        while ((token = lexer.readNextToken()).type != TokenType.EOF) {
             if(token.type == TokenType.LINE_BREAK){
                 System.err.println();
             }else if(token.type == TokenType.WHITE_SPACE){
