@@ -3,7 +3,7 @@ package com.uepb.parser;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.uepb.lexer.LexicalAnalyzer;
+import com.uepb.lexer.Lexer;
 import com.uepb.parser.exceptions.SyntaxError;
 import com.uepb.token.Token;
 import com.uepb.token.TokenType;
@@ -12,10 +12,10 @@ public class Parser {
     
     private static final int BUFFER_SIZE = 10;
     private List<Token> buffer;
-    LexicalAnalyzer lexer;
+    Lexer lexer;
     boolean eof = false;
 
-    public Parser(LexicalAnalyzer lexer){
+    public Parser(Lexer lexer){
         this.lexer = lexer;
         buffer = new ArrayList<>();
         confirmToken();
@@ -53,21 +53,36 @@ public class Parser {
         }
     }
 
+    public void parse(){
+        prog();
+    }
+
     // prog: listaComandos;
-    public void prog(){
+    private void prog(){
         listaComandos();
     }
 
     // listaComandos: (comando ';')*;
-    public void listaComandos(){
-        if(!(lookAhead(1).type() == TokenType.EOF)){
-            comando(); match(TokenType.SEMICOLON); listaComandos();
+    private void listaComandos(){
+        final var la = lookAhead(1).type();
+        final List<TokenType> tokens = List.of(
+            TokenType.PC_VAR,
+            TokenType.IDENTIFIER,
+            TokenType.PC_IF,
+            TokenType.PC_WHILE,
+            TokenType.PC_PRINT
+        ); ;
+
+        if(tokens.contains(la)){
+            comando(); 
+            match(TokenType.SEMICOLON); 
+            listaComandos();
         } 
     }
 
     // comando: declaracao | atribuicao | if-decl | while | imprimir;
-    public void comando(){
-        var la = lookAhead(1).type();
+    private void comando(){
+        final var la = lookAhead(1).type();
 
         if(la == TokenType.PC_VAR){
             declaracao();
@@ -86,8 +101,8 @@ public class Parser {
     }
 
     // tipo: 'int' | 'float' | 'string';
-    public void tipo(){
-        var la = lookAhead(1).type();
+    private void tipo(){
+        final var la = lookAhead(1).type();
 
         if(la == TokenType.PC_INT){
             match(TokenType.PC_INT);
@@ -102,58 +117,283 @@ public class Parser {
         
     }
 
-    // expr_arit: termo (('+' | '-') termo)*;
-    public void expr_arit(){
-        var la = lookAhead(1).type();
+    // expr_arit:   expr_arit + expr_arit |
+    //              expr_arit - expr_arit |
+    //              termoArit;
+    //
+    // Refatorando
+    //
+    // expr_arit: expr_arit ('+' termoArit | 
+    //                       '-' termoArit)
+    //            | termoArit;
+    //
+    // expr_arit: termoArit expr_arit2;
+    //    
+    private void expr_arit(){
+        termoArit(); 
+        expr_arit2();
+    }
 
 
+    // expr_arit2: expr_arit_subRegra1 expr_arit2 | NULL
+    private void expr_arit2(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.OP_SUM || la == TokenType.OP_SUBTRACT){
+            expr_arit_subRegra1(); 
+            expr_arit2();
+        }
 
     }
 
-    // termo: fator (('*' | '/') fator)*;
-    public void termo(){
+    // expr_arit_subRegra1: ( '+' termoArit | '-' termoArit )
+    private void expr_arit_subRegra1(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.OP_SUM){
+            match(TokenType.OP_SUM); 
+            termoArit();
+        }else if(la == TokenType.OP_SUBTRACT){
+            match(TokenType.OP_SUBTRACT); 
+            termoArit();
+        }else{
+            throw new SyntaxError(lookAhead(1), TokenType.OP_SUBTRACT, TokenType.OP_SUM);
+        }
+    }
+
+    // termoArit:   termoArit '*' termoArit |
+    //              termoArit '/' termoArit |
+    //              fatorArit;
+    //
+    // Refatorando
+    //
+    // termoArit: termoArit ('*' termoArit | 
+    //                       '/' termoArit)
+    //            | fatorArit;
+    //
+    // termoArit: fatorArit termoArit2;
+    private void termoArit(){
+        fatorArit(); 
+        termoArit2();
+    }
+
+    //termoArit2: termoArit2_subRegra1 termoArit2 | NULL
+    private void termoArit2(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.OP_MULTIPLY || la == TokenType.OP_DIVISION){
+            termoArit2_subRegra1(); 
+            termoArit2();
+        }
+
+    }
+    // termoArit2_subRegra1: ('*' fatorArit | '/' fatorArit)
+    private void termoArit2_subRegra1(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.OP_MULTIPLY){
+            match(TokenType.OP_MULTIPLY); 
+            fatorArit();
+        }else if(la == TokenType.OP_DIVISION){
+            match(TokenType.OP_DIVISION); 
+            fatorArit();
+        }else{
+            throw new SyntaxError(lookAhead(1), TokenType.OP_MULTIPLY, TokenType.OP_DIVISION);
+        }
+    }
+
+    // fatorArit: sinal (IDENTIFICADOR | INTEIRO | FLOAT | '(' expr_arit ')');
+    private void fatorArit(){
+        sinal();
+
+        final var la = lookAhead(1).type();
+        if(la == TokenType.IDENTIFIER){
+            match(TokenType.IDENTIFIER);
+        }else if(la == TokenType.INT){
+            match(TokenType.INT);
+        }else if(la == TokenType.FLOAT){
+            match(TokenType.FLOAT);
+        }else if(la == TokenType.OPEN_PAREN){
+            match(TokenType.OPEN_PAREN); 
+            expr_arit(); 
+            match(TokenType.CLOSE_PAREN);
+        }else{
+            throw new SyntaxError(lookAhead(1), TokenType.INT, TokenType.IDENTIFIER,
+                TokenType.FLOAT, TokenType.OPEN_PAREN);
+        }
 
     }
 
-    // fator: IDENTIFICADOR | NUMERO | '(' expr_arit ')' | STRING;
-    public void fator(){
+    // sinal: '-' | '+' | NULL
+    private void sinal(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.OP_SUBTRACT){
+            match(TokenType.OP_SUBTRACT);
+        }else if(la == TokenType.OP_SUM){
+            match(TokenType.OP_SUBTRACT);
+        }
 
     }
     
     // valor: expr_arit | STRING;
-    public void valor(){
+    private void valor(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.STRING){
+            match(TokenType.STRING);
+        }else{
+            expr_arit();
+        }
 
     }
     
-    // declaracao: 'var' IDENTIFICADOR ':' tipo |
-    //             'var' IDENTIFICADOR ':' tipo '=' valor;
-    public void declaracao(){
+    // declaracao: 'var' IDENTIFICADOR ':' tipo declaracaoAtribuicao;
+    private void declaracao(){
+        match(TokenType.PC_VAR); 
+        match(TokenType.IDENTIFIER); 
+        match(TokenType.COLON); 
+        tipo(); 
+        declaracaoAtribuicao();
+    }
+
+    // declaracaoAtribuicao: '=' valor | NULL;
+    private void declaracaoAtribuicao(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.OP_ASSIGNMENT){
+            match(TokenType.OP_ASSIGNMENT); 
+            valor();
+        }
 
     }
-    
+
     // atribuicao: IDENTIFICADOR '=' valor;
-    public void atribuicao(){
+    private void atribuicao(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.IDENTIFIER){
+            match(TokenType.IDENTIFIER); 
+            match(TokenType.OP_ASSIGNMENT); 
+            valor();
+        }else{
+            throw new SyntaxError(lookAhead(1), TokenType.IDENTIFIER);
+        }
 
     }
-    
-    // expr_rel: expr_arit ('==' | '!=' | '<' | '>' | '<=' | '>=') expr_arit;
-    public void expr_rel(){
+
+    // expr_rel: expr_rel op_bool termo_rel | termo_rel;
+    // expr_rel: termo_rel expr_rel2;
+    private void expr_rel(){
+        termo_rel();
+        expr_rel2();
+    }
+
+    // op_bool: 'and' | 'or'
+    private void op_bool(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.OP_AND){
+            match(TokenType.OP_AND);
+        }else if(la == TokenType.OP_OR){
+            match(TokenType.OP_OR);
+        }else{
+            throw new SyntaxError(lookAhead(1), TokenType.OP_AND, TokenType.OP_OR);
+        }
+    }
+
+    // expr_rel2: op_bool termo_rel expr_rel2 | NULL
+    private void expr_rel2(){
+        final var la = lookAhead(1).type();
+        
+        if(la == TokenType.OP_AND || la == TokenType.OP_OR){
+            op_bool(); 
+            termo_rel();
+            expr_rel2();
+        }
 
     }
+
+    //termo_rel: expr_arit OP_REL expr_arit | '(' expr_arit ')'
+    //Falta implementar o '(' expr_arit ')'
+    private void termo_rel(){
+        expr_arit();
+        op_rel();
+        expr_arit();
+    }
+
+    //op_rel: '==' | '!=' | '<' | '>' | '<=' | '>='
+    private void op_rel(){
+        final var la = lookAhead(1).type();
+        final TokenType[] tokens = {
+            TokenType.OP_EQUALS,
+            TokenType.OP_NOT_EQUAL,
+            TokenType.OP_LOWER_THAN,
+            TokenType.OP_GREATER_THAN,
+            TokenType.OP_LOWER_OR_EQUAL,
+            TokenType.OP_GREATER_OR_EQUAL
+        };
+
+        if(la == tokens[0]){
+            match(tokens[0]);
+        } else if(la == tokens[1]){
+            match(tokens[1]);
+        } else if(la == tokens[2]){
+            match(tokens[2]);
+        } else if(la == tokens[3]){
+            match(tokens[3]);
+        } else if(la == tokens[4]){
+            match(tokens[4]);
+        } else if(la == tokens[5]){
+            match(tokens[5]);
+        } else {
+            throw new SyntaxError(lookAhead(1), tokens);
+        }
+    }
     
-    // if-decl: 'if' '(' expr_rel ')' '{' listaComandos '}' ( 'else' '{' listaComandos '}' )?;
-    public void if_decl(){
+    // if-decl: 'if' '(' expr_rel ')' '{' listaComandos '}' ifTail;
+    private void if_decl(){
+        match(TokenType.PC_IF);
+        match(TokenType.OPEN_PAREN);
+        expr_rel();
+        match(TokenType.CLOSE_PAREN);
+        match(TokenType.OPEN_BRACE);
+        listaComandos();
+        match(TokenType.CLOSE_BRACE);
+        ifTail();
+    }
+
+    // ifTail: ( 'else' '{' listaComandos '}' )?
+    private void ifTail(){
+        final var la = lookAhead(1).type();
+
+        if(la == TokenType.PC_ELSE){
+            match(TokenType.PC_ELSE); 
+            match(TokenType.OPEN_BRACE); 
+            listaComandos(); 
+            match(TokenType.CLOSE_BRACE);
+        }
 
     }
     
     // while: 'while' '(' expr_rel ')' '{' listaComandos '}';
-    public void while_decl(){
+    private void while_decl(){
+        match(TokenType.PC_WHILE); 
+        match(TokenType.OPEN_PAREN);
+        expr_rel();
+        match(TokenType.CLOSE_PAREN);
+        match(TokenType.OPEN_BRACE);
+        listaComandos();
+        match(TokenType.CLOSE_BRACE);
 
     }
     
-    // imprimir: 'print' '(' IDENTIFICADOR | STRING ')';
-    public void print_func(){
-
+    // imprimir: 'print' '(' valor ')';
+    private void print_func(){
+        match(TokenType.PC_PRINT);
+        match(TokenType.OPEN_PAREN);
+        valor();
+        match(TokenType.CLOSE_PAREN);
     }
     
 }

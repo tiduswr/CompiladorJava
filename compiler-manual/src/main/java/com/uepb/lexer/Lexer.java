@@ -6,12 +6,12 @@ import com.uepb.token.Token;
 import com.uepb.token.TokenType;
 import com.uepb.token.exceptions.TokenNotRecognizedException;
 
-public class LexicalAnalyzer {
+public class Lexer {
     
     private final DoubleBufferReader reader;
     private final boolean ignoreWhiteSpace;
 
-    public LexicalAnalyzer(String programSource, boolean ignoreWhiteSpace) throws IOException{
+    public Lexer(String programSource, boolean ignoreWhiteSpace) throws IOException{
         this.ignoreWhiteSpace = ignoreWhiteSpace;
         reader = new DoubleBufferReader(programSource);
     }
@@ -105,7 +105,7 @@ public class LexicalAnalyzer {
     
             if (c == '"') {
                 str.append(c);
-                return new Token(TokenType.PC_STRING, str.toString());
+                return new Token(TokenType.STRING, str.toString());
             } else if (c == '\\') {
                 int nextChar = reader.readNextChar();
                 if (nextChar == 'n') {
@@ -172,7 +172,7 @@ public class LexicalAnalyzer {
         }
 
         return new Token(
-            hasDecimalPoint ? TokenType.PC_FLOAT : TokenType.PC_INT, 
+            hasDecimalPoint ? TokenType.FLOAT : TokenType.INT, 
             number.toString()
         );
     }

@@ -7,11 +7,14 @@ public enum TokenType {
     PC_FLOAT,
     PC_STRING,
     PC_IF,
+    PC_ELSE,
     PC_WHILE,
     PC_PRINT,
     PC_BREAK,
 
     // Operadores
+    OP_AND, // and
+    OP_OR, // or
     OP_ASSIGNMENT, // =
     OP_EQUALS,     // ==
     OP_DENIAL,  // !
@@ -26,13 +29,16 @@ public enum TokenType {
     OP_DIVISION,  // /
     
     // Identificadores
+    INT,
+    FLOAT,
+    STRING,
     IDENTIFIER,
     EOF,
 
     // Ponto e vírgula e chaves
-    WHITE_SPACE,
-    LINE_BREAK,
-    COLON,
+    WHITE_SPACE, // 
+    LINE_BREAK, // \n
+    COLON, // :
     COMMA, // ,
     SEMICOLON, // ;
     OPEN_BRACE,  // {
