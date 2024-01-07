@@ -1,14 +1,15 @@
-var x : int;
-var str : string = "Aquele seu \"Amigo\" é engraçado";
+spawn x : int;
+spawn str : string = "Aquele seu \"Amigo\" é engraçado";
 
 x = -23*(3+5.2);
 
-if(x != 0){
-    while(x >= 0){
+unless(x != 0){
+    during(x >= 0){
         x = x - 1;
+        stop;
     };
-}else{
+}do{
     x = -1;
 };
 
-print(x);
+show(x);

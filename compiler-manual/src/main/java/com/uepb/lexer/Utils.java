@@ -10,15 +10,15 @@ public class Utils {
     
     private static final Map<String, TokenType> reservedWords = 
         Map.ofEntries(
-            entry("var", TokenType.PC_VAR),
+            entry("spawn", TokenType.PC_VAR),
             entry("int", TokenType.PC_INT),
             entry("float", TokenType.PC_FLOAT),
             entry("string", TokenType.PC_STRING),
-            entry("if", TokenType.PC_IF),
-            entry("while", TokenType.PC_WHILE),
-            entry("print", TokenType.PC_PRINT),
-            entry("break", TokenType.PC_BREAK),
-            entry("else", TokenType.PC_ELSE),
+            entry("unless", TokenType.PC_IF),
+            entry("during", TokenType.PC_WHILE),
+            entry("show", TokenType.PC_PRINT),
+            entry("stop", TokenType.PC_BREAK),
+            entry("do", TokenType.PC_ELSE),
             entry("or", TokenType.OP_OR),
             entry("and", TokenType.OP_AND)
         );

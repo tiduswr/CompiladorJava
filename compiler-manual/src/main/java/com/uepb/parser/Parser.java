@@ -60,8 +60,9 @@ public class Parser {
     // prog: listaComandos;
     private void prog(){
         listaComandos();
+        match(TokenType.EOF);
     }
-
+    
     // listaComandos: (comando ';')*;
     private void listaComandos(){
         final var la = lookAhead(1).type();
@@ -70,14 +71,16 @@ public class Parser {
             TokenType.IDENTIFIER,
             TokenType.PC_IF,
             TokenType.PC_WHILE,
-            TokenType.PC_PRINT
-        ); ;
+            TokenType.PC_PRINT,
+            TokenType.PC_BREAK
+        );
 
         if(tokens.contains(la)){
             comando(); 
             match(TokenType.SEMICOLON); 
             listaComandos();
-        } 
+        }
+
     }
 
     // comando: declaracao | atribuicao | if-decl | while | imprimir;
@@ -94,6 +97,8 @@ public class Parser {
             while_decl();
         }else if(la == TokenType.PC_PRINT){
             print_func();
+        }else if(la == TokenType.PC_BREAK){
+            break_decl();
         }else{
             throw new SyntaxError(lookAhead(1), TokenType.PC_VAR, TokenType.IDENTIFIER,
                 TokenType.PC_IF, TokenType.PC_WHILE, TokenType.PC_PRINT);
@@ -351,7 +356,7 @@ public class Parser {
         }
     }
     
-    // if-decl: 'if' '(' expr_rel ')' '{' listaComandos '}' ifTail;
+    // if-decl: 'unless' '(' expr_rel ')' '{' listaComandos '}' ifTail;
     private void if_decl(){
         match(TokenType.PC_IF);
         match(TokenType.OPEN_PAREN);
@@ -363,7 +368,7 @@ public class Parser {
         ifTail();
     }
 
-    // ifTail: ( 'else' '{' listaComandos '}' )?
+    // ifTail: ( 'do' '{' listaComandos '}' )?
     private void ifTail(){
         final var la = lookAhead(1).type();
 
@@ -376,7 +381,7 @@ public class Parser {
 
     }
     
-    // while: 'while' '(' expr_rel ')' '{' listaComandos '}';
+    // while: 'during' '(' expr_rel ')' '{' listaComandos '}';
     private void while_decl(){
         match(TokenType.PC_WHILE); 
         match(TokenType.OPEN_PAREN);
@@ -388,7 +393,7 @@ public class Parser {
 
     }
     
-    // imprimir: 'print' '(' valor ')';
+    // imprimir: 'show' '(' valor ')';
     private void print_func(){
         match(TokenType.PC_PRINT);
         match(TokenType.OPEN_PAREN);
@@ -396,4 +401,8 @@ public class Parser {
         match(TokenType.CLOSE_PAREN);
     }
     
+    private void break_decl() {
+        match(TokenType.PC_BREAK);
+    }
+
 }
