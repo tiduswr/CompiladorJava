@@ -1,14 +1,9 @@
 package com.uepb.token;
 
-public class Token {
-    public TokenType type;
-    public String lexema;
-
-    public Token(TokenType type, String lexema){
-        this.lexema = lexema;
-        this.type = type;
-    }
-
+public record Token(
+    TokenType type,
+    String lexema
+){
     @Override
     public String toString(){
         return "<" + type + ", " + lexema + ">";

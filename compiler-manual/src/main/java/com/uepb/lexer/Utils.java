@@ -14,7 +14,8 @@ public class Utils {
             entry("float", TokenType.PC_FLOAT),
             entry("if", TokenType.PC_IF),
             entry("while", TokenType.PC_WHILE),
-            entry("print", TokenType.PC_PRINT)
+            entry("print", TokenType.PC_PRINT),
+            entry("break", TokenType.PC_BREAK)
         );
     
     private static final Map<Character, TokenType> reservedChars = Map.ofEntries(

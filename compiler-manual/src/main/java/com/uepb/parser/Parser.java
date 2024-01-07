@@ -1,6 +1,5 @@
 package com.uepb.parser;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +7,6 @@ import com.uepb.lexer.LexicalAnalyzer;
 import com.uepb.parser.exceptions.SyntaxError;
 import com.uepb.token.Token;
 import com.uepb.token.TokenType;
-import com.uepb.token.exceptions.TokenNotRecognizedException;
 
 public class Parser {
     
@@ -17,13 +15,13 @@ public class Parser {
     LexicalAnalyzer lexer;
     boolean eof = false;
 
-    public Parser(LexicalAnalyzer lexer) throws TokenNotRecognizedException, IOException{
+    public Parser(LexicalAnalyzer lexer){
         this.lexer = lexer;
         buffer = new ArrayList<>();
         confirmToken();
     }
 
-    private void confirmToken() throws TokenNotRecognizedException, IOException {
+    private void confirmToken(){
     
         if(buffer.size() > 0) buffer.remove(0);
         
@@ -32,7 +30,7 @@ public class Parser {
 
             buffer.add(next);
 
-            if(next.type == TokenType.EOF){
+            if(next.type() == TokenType.EOF){
                 eof = true;
             }
 
@@ -46,8 +44,8 @@ public class Parser {
         return k-1 >= buffer.size() ? buffer.get(buffer.size()-1) : buffer.get(k-1);
     }
 
-    private void match(TokenType type) throws TokenNotRecognizedException, IOException{
-        if(lookAhead(1).type == type){
+    private void match(TokenType type){
+        if(lookAhead(1).type() == type){
             System.out.println("Match: " + lookAhead(1));
             confirmToken();
         }else{
@@ -56,20 +54,20 @@ public class Parser {
     }
 
     // prog: listaComandos;
-    public void prog() throws TokenNotRecognizedException, IOException{
+    public void prog(){
         listaComandos();
     }
 
     // listaComandos: (comando ';')*;
-    public void listaComandos() throws TokenNotRecognizedException, IOException{
-        if(!(lookAhead(1).type == TokenType.EOF)){
+    public void listaComandos(){
+        if(!(lookAhead(1).type() == TokenType.EOF)){
             comando(); match(TokenType.SEMICOLON); listaComandos();
         } 
     }
 
     // comando: declaracao | atribuicao | if-decl | while | imprimir;
-    public void comando() throws TokenNotRecognizedException, IOException{
-        var la = lookAhead(1).type;
+    public void comando(){
+        var la = lookAhead(1).type();
 
         if(la == TokenType.PC_VAR){
             declaracao();
@@ -88,8 +86,8 @@ public class Parser {
     }
 
     // tipo: 'int' | 'float' | 'string';
-    public void tipo() throws TokenNotRecognizedException, IOException{
-        var la = lookAhead(1).type;
+    public void tipo(){
+        var la = lookAhead(1).type();
 
         if(la == TokenType.PC_INT){
             match(TokenType.PC_INT);
@@ -105,53 +103,56 @@ public class Parser {
     }
 
     // expr_arit: termo (('+' | '-') termo)*;
-    public void expr_arit() throws TokenNotRecognizedException, IOException{
+    public void expr_arit(){
+        var la = lookAhead(1).type();
+
+
 
     }
 
     // termo: fator (('*' | '/') fator)*;
-    public void termo() throws TokenNotRecognizedException, IOException{
+    public void termo(){
 
     }
 
     // fator: IDENTIFICADOR | NUMERO | '(' expr_arit ')' | STRING;
-    public void fator() throws TokenNotRecognizedException, IOException{
+    public void fator(){
 
     }
     
     // valor: expr_arit | STRING;
-    public void valor() throws TokenNotRecognizedException, IOException{
+    public void valor(){
 
     }
     
     // declaracao: 'var' IDENTIFICADOR ':' tipo |
     //             'var' IDENTIFICADOR ':' tipo '=' valor;
-    public void declaracao() throws TokenNotRecognizedException, IOException{
+    public void declaracao(){
 
     }
     
     // atribuicao: IDENTIFICADOR '=' valor;
-    public void atribuicao() throws TokenNotRecognizedException, IOException{
+    public void atribuicao(){
 
     }
     
     // expr_rel: expr_arit ('==' | '!=' | '<' | '>' | '<=' | '>=') expr_arit;
-    public void expr_rel() throws TokenNotRecognizedException, IOException{
+    public void expr_rel(){
 
     }
     
     // if-decl: 'if' '(' expr_rel ')' '{' listaComandos '}' ( 'else' '{' listaComandos '}' )?;
-    public void if_decl() throws TokenNotRecognizedException, IOException{
+    public void if_decl(){
 
     }
     
     // while: 'while' '(' expr_rel ')' '{' listaComandos '}';
-    public void while_decl() throws TokenNotRecognizedException, IOException{
+    public void while_decl(){
 
     }
     
     // imprimir: 'print' '(' IDENTIFICADOR | STRING ')';
-    public void print_func() throws TokenNotRecognizedException, IOException{
+    public void print_func(){
 
     }
     

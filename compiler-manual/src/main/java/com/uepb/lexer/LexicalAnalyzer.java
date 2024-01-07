@@ -16,7 +16,7 @@ public class LexicalAnalyzer {
         reader = new DoubleBufferReader(programSource);
     }
 
-    public Token readNextToken() throws IOException, TokenNotRecognizedException{
+    public Token readNextToken() {
         int readedChar;
 
         while((readedChar = reader.readNextChar()) != DoubleBufferReader.FILE_END){
@@ -48,7 +48,7 @@ public class LexicalAnalyzer {
         return new Token(TokenType.EOF, null);
     }
 
-    private Token readSpecialCharacters(char c) throws IOException, TokenNotRecognizedException{
+    private Token readSpecialCharacters(char c) {
 
         switch(c){
             case '>':
@@ -77,7 +77,7 @@ public class LexicalAnalyzer {
     }
 
     private Token binaryCheck(DoubleBufferReader reader, char curChar, 
-        char possibleNextChar, TokenType ifTrue, TokenType ifNot) throws IOException{
+        char possibleNextChar, TokenType ifTrue, TokenType ifNot) {
 
         StringBuilder operator = new StringBuilder("" + curChar);
 
@@ -95,7 +95,7 @@ public class LexicalAnalyzer {
 
     }
 
-    private Token readString(char initialChar) throws IOException, TokenNotRecognizedException {
+    private Token readString(char initialChar) {
         StringBuilder str = new StringBuilder();
         str.append(initialChar);
     
@@ -128,7 +128,7 @@ public class LexicalAnalyzer {
     }
     
 
-    private Token readIdentifier(char initialChar) throws IOException{
+    private Token readIdentifier(char initialChar) {
         StringBuilder identifier = new StringBuilder();
         identifier.append(initialChar);
 
@@ -152,7 +152,7 @@ public class LexicalAnalyzer {
         return new Token(type, lexema);
     }
 
-    private Token readNumber(char initialChar) throws IOException{
+    private Token readNumber(char initialChar) {
         StringBuilder number = new StringBuilder();
         number.append(initialChar);
 

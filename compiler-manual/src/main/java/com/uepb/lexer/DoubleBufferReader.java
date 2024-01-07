@@ -71,10 +71,14 @@ public class DoubleBufferReader implements Closeable{
         }
     }
 
-    public int readNextChar() throws IOException {
-        int currentChar = buffer[pointer];
-        advancePointer();
-        return currentChar;
+    public int readNextChar() throws ProgramReadException{
+        try{
+            int currentChar = buffer[pointer];
+            advancePointer();
+            return currentChar;
+        }catch(IOException ex){
+            throw new ProgramReadException(ex.getMessage());
+        }
     }
 
     public void undo(){

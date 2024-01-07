@@ -1,8 +1,6 @@
 package com.uepb.lexer.exceptions;
 
-import java.io.IOException;
-
-public class ProgramReadException extends IOException{
+public class ProgramReadException extends RuntimeException{
     
     public ProgramReadException(String message){
         super(message);

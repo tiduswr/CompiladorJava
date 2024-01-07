@@ -12,14 +12,15 @@ public class Main {
         LexicalAnalyzer lexer = new LexicalAnalyzer(args[0], true);
 
         Token token;
-        while ((token = lexer.readNextToken()).type != TokenType.EOF) {
-            if(token.type == TokenType.LINE_BREAK){
-                System.err.println();
-            }else if(token.type == TokenType.WHITE_SPACE){
-                System.out.print(' ');
-            }else{
-                System.out.print(token);
-            }
+        while ((token = lexer.readNextToken()).type() != TokenType.EOF) {
+            // if(token.type() == TokenType.LINE_BREAK){
+            //     System.err.println();
+            // }else if(token.type() == TokenType.WHITE_SPACE){
+            //     System.out.print(' ');
+            // }else{
+            //     System.out.print(token);
+            // }
+            System.out.println(token);
         }
         
     }

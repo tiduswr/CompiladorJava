@@ -1,8 +1,6 @@
 package com.uepb.token.exceptions;
 
-import java.io.IOException;
-
-public class TokenNotRecognizedException extends IOException{
+public class TokenNotRecognizedException extends RuntimeException{
     
     public TokenNotRecognizedException(String message){
         super(message);
