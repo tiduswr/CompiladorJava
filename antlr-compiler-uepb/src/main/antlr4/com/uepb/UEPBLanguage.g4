@@ -7,6 +7,7 @@ PalChave: 'spawn'
         | 'do'
         | 'during'
         | 'show'
+        | 'ask'
         | 'stop';
 
 TipoVar: 'int' | 'float' | 'string';
@@ -76,6 +77,7 @@ comando returns [String tipoComando]: (
         | ifDecl        { $tipoComando = "Estrutura unless"; }
         | whileDecl     { $tipoComando = "Estrutura during"; }
         | printFunc     { $tipoComando = "Função show"; }
+        | askFunc       { $tipoComando = "Função input"; }
         | 'stop'        { $tipoComando = "stop"; }
 ) ';';
 
@@ -130,3 +132,6 @@ whileDecl: 'during' '(' exprRel ')' '{' listaComandos? '}';
 
 // imprimir: 'show' '(' valor ')';
 printFunc: 'show' '(' valor ')';
+
+// input: 'ask' '(' valor ')';
+askFunc: 'ask' '(' ')';
