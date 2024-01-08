@@ -3,7 +3,6 @@ package com.uepb.lexer;
 import java.util.Map;
 import static java.util.Map.entry;
 
-import com.uepb.token.Token;
 import com.uepb.token.TokenType;
 
 public class Utils {
@@ -17,6 +16,7 @@ public class Utils {
             entry("unless", TokenType.PC_IF),
             entry("during", TokenType.PC_WHILE),
             entry("show", TokenType.PC_PRINT),
+            entry("ask", TokenType.PC_INPUT),
             entry("stop", TokenType.PC_BREAK),
             entry("do", TokenType.PC_ELSE),
             entry("or", TokenType.OP_OR),

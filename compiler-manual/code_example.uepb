@@ -9,7 +9,8 @@ unless(x != 0){
         stop;
     };
 }do{
-    x = -1;
+    x = x - 1;
 };
 
+ask();
 show(x);

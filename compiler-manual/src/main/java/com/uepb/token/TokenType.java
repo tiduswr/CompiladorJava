@@ -10,6 +10,7 @@ public enum TokenType {
     PC_ELSE,
     PC_WHILE,
     PC_PRINT,
+    PC_INPUT,
     PC_BREAK,
 
     // Operadores

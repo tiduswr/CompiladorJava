@@ -72,6 +72,7 @@ public class Parser {
             TokenType.PC_IF,
             TokenType.PC_WHILE,
             TokenType.PC_PRINT,
+            TokenType.PC_INPUT,
             TokenType.PC_BREAK
         );
 
@@ -97,6 +98,8 @@ public class Parser {
             while_decl();
         }else if(la == TokenType.PC_PRINT){
             print_func();
+        }else if(la == TokenType.PC_INPUT){
+            ask_func();
         }else if(la == TokenType.PC_BREAK){
             break_decl();
         }else{
@@ -398,6 +401,13 @@ public class Parser {
         match(TokenType.PC_PRINT);
         match(TokenType.OPEN_PAREN);
         valor();
+        match(TokenType.CLOSE_PAREN);
+    }
+
+    // input: 'ask' '(' ')'
+    private void ask_func(){
+        match(TokenType.PC_INPUT);
+        match(TokenType.OPEN_PAREN);
         match(TokenType.CLOSE_PAREN);
     }
     
