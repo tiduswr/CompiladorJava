@@ -14,8 +14,10 @@ public class Main {
         ExpressoesLexer lexer = new ExpressoesLexer(charStream);
         TokenStream tokenStream = new CommonTokenStream(lexer);
         ExpressoesParser parser = new ExpressoesParser(tokenStream);
-        int val = parser.programa().val;
+        var arvore = parser.programa();
+        Calculador calculador = new Calculador();
+        var valor = calculador.visitPrograma(arvore);
 
-        System.out.println("Valor da expressão: " + val);
+        System.out.println("Valor do programa.expr: " + valor);
     }
 }
