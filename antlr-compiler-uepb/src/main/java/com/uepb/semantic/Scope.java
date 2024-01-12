@@ -6,10 +6,8 @@ import java.util.List;
 
 public class Scope {
 
-    public record SymbolTableEntry(SymbolTable table, String tblName){}
-
     private int value = -1;
-    private final LinkedList<SymbolTableEntry> stack;
+    private final LinkedList<SymbolTable> stack;
     private final boolean debugMode;
 
     public Scope(boolean debugMode) {
@@ -22,11 +20,11 @@ public class Scope {
         if(debugMode) 
             System.out.println(String.join("", Collections.nCopies(value, " ")) 
                 + "Escopo Aberto(Table-" + value + ")");
-        stack.push(new SymbolTableEntry(new SymbolTable(), "Table-" + value));
+        stack.push(new SymbolTable());
     }
 
     public SymbolTable getCurrentScope() {
-        return stack.peek().table;
+        return stack.peek();
     }
 
     public void dropCurrentScope() {
@@ -38,7 +36,7 @@ public class Scope {
     }
 
     public List<SymbolTable> getAllSymbolTable() {
-        return stack.stream().map(e -> e.table).toList();
+        return stack;
     }
 
     public int identationOffset(){
