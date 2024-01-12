@@ -1,8 +1,48 @@
 grammar UEPBLanguage;
 
-// ********************* TOKENS
+programa: listaComandos EOF;
 
-PalChave: 'spawn'
+listaComandos: (comando)+;
+
+comando: (
+        declaracao      
+        | atribuicao    
+        | ifDecl        
+        | whileDecl     
+        | printFunc     
+        | askFunc       
+        | 'stop'        
+) ';';
+
+exprArit: termoArit (OP_ARIT_1 termoArit)*;
+
+termoArit: fatorArit (OP_ARIT_2 fatorArit)*;
+
+fatorArit: OP_ARIT_1? (ID | NUM_INT | NUM_REAL  | '(' exprArit ')');
+
+valor: exprArit | STRING | askFunc;
+
+declaracao:'spawn' ID ':' TIPO_VAR ('=' valor)?;
+
+atribuicao: ID '=' valor;
+
+exprRel: termoRel (OP_BOOL termoRel)*;
+
+termoRel:(valor OP_REL valor) | '(' exprRel ')';
+
+ifDecl: 'unless' '(' exprRel ')' escopo ifTail?;
+
+ifTail:  'do' escopo;
+
+whileDecl: 'during' '(' exprRel ')' escopo;
+
+escopo: '{' listaComandos? '}';
+
+printFunc: 'show' '(' valor ')';
+
+askFunc: 'ask' '(' ')';
+
+PAL_CHAVE: 'spawn'
         | 'unless'
         | 'do'
         | 'during'
@@ -10,128 +50,41 @@ PalChave: 'spawn'
         | 'ask'
         | 'stop';
 
-TipoVar: 'int' | 'float' | 'string';
+TIPO_VAR: 'int' | 'float' | 'string';
 
-OpBool: 'and' | 'or';
+OP_BOOL: 'and' | 'or';
 
-NumInt: ('0'..'9')+;
+NUM_INT: ('0'..'9')+;
 
-NumReal: ('0'..'9')+ '.' ('0'..'9')+;
+NUM_REAL: ('0'..'9')+ '.' ('0'..'9')+;
 
-Ident: ('a'..'z') ('a'..'z' | 'A'..'Z' | '0'..'9')*;
+ID: ('a'..'z') ('a'..'z' | 'A'..'Z' | '0'..'9')*;
 
-String: '"' (SeqEsc | ~('"' | '\\') )* '"';
+STRING: '"' (SeqEsc | ~('"' | '\\') )* '"';
 
 fragment
 SeqEsc: '\\"';
 
-OpRel: '>' | '>=' | '<' | '<=' | '==' | '!=' | '=' | '!';
+OP_REL: '>' | '>=' | '<' | '<=' | '==' | '!=' | '=' | '!';
 
-OpArt1: '+' | '-';
+OP_ARIT_1: '+' | '-';
 
-OpArt2: '*' | '/';
+OP_ARIT_2: '*' | '/';
 
-AbrePar: '(';
+ABRE_PAR: '(';
 
-FechaPar: ')';
+FECHA_PAR: ')';
 
-AbreChave: '{';
+ABRE_CHAVE: '{';
 
-FechaChave: '}';
+FECHA_CHAVE: '}';
 
-Delim: ':';
+DELIMITADOR: ':';
 
-Virgula: ',';
+VIRGULA: ',';
 
-PontoVirgula: ';';
+PONTO_VIRGULA: ';';
 
-Comentario: '//' ~('\n' | '\r') '\r'? '\n' -> skip;
+COMENTARIO: '//' ~('\n' | '\r') '\r'? '\n' -> skip;
 
-EspacoBranco: ( ' ' | '\t' | '\r' | '\n' ) -> skip;
-
-// ********************* GRAMÁTICA
-
-// prog: listaComandos;
-programa: { System.out.println("Começou um programa!"); } 
-        lc=listaComandos EOF { 
-                System.out.println("Número de comandos: " + $lc.numComandos);
-                System.out.println("Último Comando: " + $lc.ultimoComando);
-};
-
-// listaComandos: (comando ';')+;
-listaComandos returns [int numComandos, String ultimoComando]
-@init {
-        $numComandos = 0; 
-        $ultimoComando = "";
-}
-: (comando {
-        System.out.println("Comando do tipo: " + $comando.tipoComando);
-        $numComandos++;
-        $ultimoComando = $comando.text;
-} )+;
-
-// comando: declaracao | atribuicao | if-decl | while | imprimir;
-comando returns [String tipoComando]: (
-        declaracao      { $tipoComando = "Declaração"; }
-        | atribuicao    { $tipoComando = "Atribuição"; }
-        | ifDecl        { $tipoComando = "Estrutura unless"; }
-        | whileDecl     { $tipoComando = "Estrutura during"; }
-        | printFunc     { $tipoComando = "Função show"; }
-        | askFunc       { $tipoComando = "Função input"; }
-        | 'stop'        { $tipoComando = "stop"; }
-) ';';
-
-// expr_arit: expr_arit ('+' termoArit | 
-//                       '-' termoArit)
-//            | termoArit;
-exprArit: termoArit (OpArt1 termoArit)*;
-
-// termoArit: termoArit ('*' termoArit | 
-//                       '/' termoArit)
-//            | fatorArit;
-termoArit: fatorArit (OpArt2 fatorArit)*;
-
-// fatorArit: IDENTIFICADOR | INTEIRO | FLOAT | '(' expr_arit ')';
-fatorArit: OpArt1? (Ident | NumInt | NumReal  | '(' exprArit ')');
-
-// valor: expr_arit | STRING;
-valor: exprArit | String;
-
-// declaracao: 'var' IDENTIFICADOR ':' tipo declaracaoAtribuicao;
-declaracao:'spawn' Ident ':' TipoVar ('=' valor)? { 
-                System.out.println("Declaracao: Var=" + $Ident.text + ", Tipo=" + $TipoVar.text); 
-        };
-
-// atribuicao: IDENTIFICADOR '=' valor;
-atribuicao: Ident '=' valor { 
-                System.out.println("Atribuição: Var=" + $Ident.text + ", Valor=" + $valor.text); 
-        };
-
-// expr_rel: expr_rel op_bool termo_rel | termo_rel;
-exprRel: termoRel (OpBool termoRel)*;
-
-//termo_rel: expr_arit OP_REL expr_arit | '(' expr_arit ')'
-termoRel:(valor OpRel valor) | '(' exprRel ')';
-
-// if-decl: 'unless' '(' expr_rel ')' '{' listaComandos '}' ifTail;
-ifDecl: 'unless' '(' exprRel ')' '{' unless=listaComandos? '}' ('do' '{' unless_do=listaComandos? '}' )? { 
-        int numComandos = $unless.numComandos;
-        String ultimoComando = $unless.ultimoComando;
-
-        if($unless_do.text != null){
-                numComandos = numComandos + $unless_do.numComandos;
-                ultimoComando = $unless_do.ultimoComando;
-        }
-
-        System.out.println("Número de comandos(unless): " + numComandos);
-        System.out.println("Último Comando(unless): " + ultimoComando);
-};
-
-// while: 'during' '(' expr_rel ')' '{' listaComandos '}';
-whileDecl: 'during' '(' exprRel ')' '{' listaComandos? '}';
-
-// imprimir: 'show' '(' valor ')';
-printFunc: 'show' '(' valor ')';
-
-// input: 'ask' '(' valor ')';
-askFunc: 'ask' '(' ')';
+WS: ( ' ' | '\t' | '\r' | '\n' ) -> skip;
