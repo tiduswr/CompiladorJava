@@ -30,6 +30,10 @@ public class Utils {
     public static UEPBLanguageType verifyType(Scope scope, ValorContext ctx){
         if(ctx.STRING() != null || ctx.askFunc() != null){
             return STRING;
+        }else if(ctx.toFloatFunc() != null){
+            return FLOAT;
+        }else if(ctx.toIntFunc() != null){
+            return INTEIRO;
         }else{
             return verifyType(scope, ctx.exprArit());
         }

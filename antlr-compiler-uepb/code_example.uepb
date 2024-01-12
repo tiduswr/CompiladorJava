@@ -1,18 +1,17 @@
-spawn x : int;
-spawn str : string = "Aquele seu \"Amigo\" é engraçado";
+spawn num : int = toInt(ask());
+spawn potencia : int = toInt(ask());
+spawn resultado : int;
 
-x = -23*(3+5.2);
-
-unless("x" != 0){
-    spawn x : int = x + 2;
-    during(x >= 0){
-        spawn y : int = x + 3;
-        x = x - 1;
-        stop;
-    };
+unless(potencia == 0){
+    resultado = 1;
 }do{
-    x = x - 1;
+    resultado = num;
+    spawn aux : int = 1;
+    during(aux < potencia){
+        resultado = resultado * num;
+        aux = aux + 1;
+    };
 };
 
-ask();
-show(str);
+show("O resultado é ");
+show(resultado);

@@ -20,7 +20,7 @@ termoArit: fatorArit (OP_ARIT_2 fatorArit)*;
 
 fatorArit: OP_ARIT_1? (ID | NUM_INT | NUM_REAL | '(' exprArit ')');
 
-valor: exprArit | STRING | askFunc;
+valor: exprArit | STRING | askFunc | toIntFunc | toFloatFunc;
 
 declaracao:'spawn' ID ':' TIPO_VAR ('=' valor)?;
 
@@ -41,6 +41,10 @@ escopo: '{' listaComandos? '}';
 printFunc: 'show' '(' valor ')';
 
 askFunc: 'ask' '(' ')';
+
+toIntFunc: 'toInt' '(' valor ')';
+
+toFloatFunc: 'toFloat' '(' valor ')';
 
 PAL_CHAVE: 'spawn'
         | 'unless'
