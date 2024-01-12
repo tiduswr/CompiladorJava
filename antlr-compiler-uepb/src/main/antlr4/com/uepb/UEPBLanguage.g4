@@ -18,7 +18,7 @@ exprArit: termoArit (OP_ARIT_1 termoArit)*;
 
 termoArit: fatorArit (OP_ARIT_2 fatorArit)*;
 
-fatorArit: OP_ARIT_1? (ID | NUM_INT | NUM_REAL  | '(' exprArit ')');
+fatorArit: OP_ARIT_1? (ID | NUM_INT | NUM_REAL | '(' exprArit ')');
 
 valor: exprArit | STRING | askFunc;
 
@@ -30,7 +30,7 @@ exprRel: termoRel (OP_BOOL termoRel)*;
 
 termoRel:(valor OP_REL valor) | '(' exprRel ')';
 
-ifDecl: 'unless' '(' exprRel ')' escopo ifTail?;
+ifDecl: 'unless' '(' exprRel ')' escopo ifTail;
 
 ifTail:  'do' escopo;
 

@@ -13,6 +13,7 @@ import com.uepb.UEPBLanguageParser.DeclaracaoContext;
 import com.uepb.UEPBLanguageParser.EscopoContext;
 import com.uepb.UEPBLanguageParser.ExprAritContext;
 import com.uepb.UEPBLanguageParser.ProgramaContext;
+import com.uepb.UEPBLanguageParser.TermoRelContext;
 import com.uepb.semantic.SymbolTable.UEPBLanguageType;
 
 public class Semantic extends UEPBLanguageBaseVisitor<Void>{
@@ -102,7 +103,17 @@ public class Semantic extends UEPBLanguageBaseVisitor<Void>{
     @Override
     public Void visitExprArit(ExprAritContext ctx) {
         Utils.verifyType(scopes, ctx);
-        return super.visitExprArit(ctx);
+        return null;
+    }
+
+    @Override
+    public Void visitTermoRel(TermoRelContext ctx) {
+        
+        for(final var VALOR : ctx.valor()){
+            Utils.verifyType(scopes, VALOR);
+        }
+
+        return null;
     }
 
 }

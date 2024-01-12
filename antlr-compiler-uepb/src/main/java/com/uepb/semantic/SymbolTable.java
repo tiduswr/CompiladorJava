@@ -8,7 +8,6 @@ public class SymbolTable {
     public enum UEPBLanguageType{
         INTEIRO,
         FLOAT,
-        BOOLEAN,
         STRING,
         INVALIDO
     }
