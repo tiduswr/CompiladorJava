@@ -29,7 +29,7 @@ public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void>{
     private void loadDefaultFunctions(){
         InputStream is = getClass().getClassLoader()
             .getResourceAsStream("defaultFunctions.c");
-        System.out.println(is);
+            
         if(is != null){
             try{
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
