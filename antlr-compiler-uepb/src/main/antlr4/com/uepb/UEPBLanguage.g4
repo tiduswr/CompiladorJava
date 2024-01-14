@@ -2,7 +2,7 @@ grammar UEPBLanguage;
 
 programa: listaComandos EOF;
 
-listaComandos: (comando)+;
+listaComandos: comando*;
 
 comando: (
         declaracao      
@@ -10,8 +10,7 @@ comando: (
         | ifDecl        
         | whileDecl     
         | printFunc     
-        | askFunc       
-        | 'stop'        
+        | askFunc    
 ) ';';
 
 exprArit: termoArit (OP_ARIT_1 termoArit)*;
@@ -34,9 +33,13 @@ ifDecl: 'unless' '(' exprRel ')' escopo ifTail;
 
 ifTail:  'do' escopo;
 
-whileDecl: 'during' '(' exprRel ')' escopo;
+whileDecl: 'during' '(' exprRel ')' escopoWhile;
 
-escopo: '{' listaComandos? '}';
+whileBreak: 'stop' ';';
+
+escopoWhile: '{' (whileBreak | comando)* '}';
+
+escopo: '{' listaComandos '}';
 
 printFunc: 'show' '(' valor ')';
 

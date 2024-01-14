@@ -11,6 +11,7 @@ import com.uepb.UEPBLanguageBaseVisitor;
 import com.uepb.UEPBLanguageParser.AtribuicaoContext;
 import com.uepb.UEPBLanguageParser.DeclaracaoContext;
 import com.uepb.UEPBLanguageParser.EscopoContext;
+import com.uepb.UEPBLanguageParser.EscopoWhileContext;
 import com.uepb.UEPBLanguageParser.ExprAritContext;
 import com.uepb.UEPBLanguageParser.ProgramaContext;
 import com.uepb.UEPBLanguageParser.TermoRelContext;
@@ -39,6 +40,15 @@ public class Semantic extends UEPBLanguageBaseVisitor<Void>{
     public Void visitEscopo(EscopoContext ctx) {
         scopes.startScope();
         super.visitListaComandos(ctx.listaComandos());
+        scopes.dropCurrentScope();
+
+        return null;
+    }
+
+    @Override
+    public Void visitEscopoWhile(EscopoWhileContext ctx) {
+        scopes.startScope();
+        ctx.comando().forEach(c -> visitComando(c));
         scopes.dropCurrentScope();
 
         return null;
