@@ -25,9 +25,9 @@ declaracao:'spawn' ID ':' TIPO_VAR ('=' valor)?;
 
 atribuicao: ID '=' valor;
 
-exprRel: termoRel (OP_BOOL termoRel)*;
+exprRel: termoRel (OP_BOOL outrosTermos+=termoRel)*;
 
-termoRel:(valor OP_REL valor) | '(' exprRel ')';
+termoRel:(v1=valor OP_REL v2=valor) | '(' exprRel ')';
 
 ifDecl: 'unless' '(' exprRel ')' escopo ifTail;
 
@@ -43,7 +43,7 @@ escopo: '{' listaComandos '}';
 
 printFunc: 'show' '(' valor ')';
 
-askFunc: 'ask' '(' ')';
+askFunc: 'ask' '(' valor? ')';
 
 toIntFunc: 'toInt' '(' valor ')';
 
@@ -67,10 +67,8 @@ NUM_REAL: ('0'..'9')+ '.' ('0'..'9')+;
 
 ID: ('a'..'z') ('a'..'z' | 'A'..'Z' | '0'..'9')*;
 
-STRING: '"' (SeqEsc | ~('"' | '\\') )* '"';
-
-fragment
-SeqEsc: '\\"';
+fragment ESCAPE : '\\' .;
+STRING: '"' (ESCAPE | ~[\n"])* '"';
 
 OP_REL: '>' | '>=' | '<' | '<=' | '==' | '!=' | '=' | '!';
 
@@ -92,6 +90,6 @@ VIRGULA: ',';
 
 PONTO_VIRGULA: ';';
 
-COMENTARIO: '//' ~('\n' | '\r') '\r'? '\n' -> skip;
+COMENTARIO: '#' ~( '\r' | '\n' )* -> skip;
 
 WS: ( ' ' | '\t' | '\r' | '\n' ) -> skip;

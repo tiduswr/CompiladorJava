@@ -1,9 +1,11 @@
+# Calcula a potencia de um numero
+
 spawn num : int = toInt(ask());
 spawn potencia : int = toInt(ask());
 spawn resultado : int;
 
 unless(potencia == 0){
-    resultado = 1;
+    resultado = toInt(1.0);
 }do{
     resultado = num;
     spawn aux : int = 1;
