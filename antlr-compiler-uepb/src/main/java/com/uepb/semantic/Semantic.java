@@ -13,6 +13,7 @@ import com.uepb.UEPBLanguageParser.DeclaracaoContext;
 import com.uepb.UEPBLanguageParser.EscopoContext;
 import com.uepb.UEPBLanguageParser.EscopoWhileContext;
 import com.uepb.UEPBLanguageParser.ExprAritContext;
+import com.uepb.UEPBLanguageParser.ExprRelContext;
 import com.uepb.UEPBLanguageParser.ProgramaContext;
 import com.uepb.UEPBLanguageParser.TermoRelContext;
 import com.uepb.semantic.SymbolTable.UEPBLanguageType;
@@ -117,8 +118,16 @@ public class Semantic extends UEPBLanguageBaseVisitor<Void>{
     }
 
     @Override
+    public Void visitExprRel(ExprRelContext ctx) {
+        ctx.termoRel().forEach(t -> Utils.verifyType(scopes, t));
+
+        return null;
+    }
+
+    @Override
     public Void visitTermoRel(TermoRelContext ctx) {
         
+        //Verificar declaração de variáveis
         for(final var VALOR : ctx.valor()){
             Utils.verifyType(scopes, VALOR);
         }

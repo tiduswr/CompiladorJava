@@ -8,7 +8,9 @@ import org.antlr.v4.runtime.Token;
 import com.uepb.UEPBLanguageParser.ExprAritContext;
 import com.uepb.UEPBLanguageParser.FatorAritContext;
 import com.uepb.UEPBLanguageParser.TermoAritContext;
+import com.uepb.UEPBLanguageParser.TermoRelContext;
 import com.uepb.UEPBLanguageParser.ValorContext;
+import com.uepb.semantic.SymbolTable.UEPBLanguageType;
 
 import static com.uepb.semantic.SymbolTable.UEPBLanguageType;
 import static com.uepb.semantic.SymbolTable.UEPBLanguageType.INVALIDO;
@@ -102,6 +104,17 @@ public class Utils {
             .filter(type -> type != null)
             .findFirst()
             .get(); // Seguro, pois a regra do contexto de FATOR verifica se existe ao menos 1
+    }
+
+    public static UEPBLanguageType verifyType(Scope scopes, TermoRelContext termoRel) {
+        var firstValor = Utils.verifyType(scopes, termoRel.v1);
+        var secondValor = Utils.verifyType(scopes, termoRel.v2);
+
+        if((firstValor != secondValor) || (firstValor == STRING || secondValor == STRING))
+                Utils.insertSemanticError(termoRel.OP_REL().getSymbol(), "A expressão relacional " 
+                + termoRel.getText() + " precisa ser entre elementos do mesmo tipo e não ser uma STRING");
+
+        return null;
     }
 
 }
