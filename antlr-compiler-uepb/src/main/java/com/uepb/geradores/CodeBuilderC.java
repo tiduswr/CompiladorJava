@@ -1,5 +1,8 @@
 package com.uepb.geradores;
 
+import static com.uepb.semantic.SymbolTable.UEPBLanguageType.INVALIDO;
+import static com.uepb.semantic.SymbolTable.UEPBLanguageType.STRING;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +15,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import com.uepb.UEPBLanguageBaseVisitor;
 import com.uepb.UEPBLanguageParser.*;
 import com.uepb.semantic.Scope;
+import com.uepb.semantic.SymbolTable;
 import com.uepb.semantic.Utils;
 import com.uepb.semantic.SymbolTable.UEPBLanguageType;
 
@@ -71,11 +75,26 @@ public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void>{
 
         output.append("\n\n");
         tab();
-        output.append("return 0;\n}");
+        output.append("return 0;\n");
 
-        scopes.dropCurrentScope();
+        closeScope(scopes.getCurrentScope());
 
         return null;
+    }
+
+    private void closeScope(SymbolTable table){
+
+        table.getTable().stream()
+            .filter(entry -> entry.getType() == STRING)
+            .forEach(strVar -> {
+                tab();
+                output.append(String.format("free(%s);\n", 
+                strVar.getName()));
+            });
+
+        scopes.dropCurrentScope();
+        tab();
+        output.append("}");
     }
 
     @Override
@@ -84,9 +103,7 @@ public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void>{
         output.append("{\n");
         visitListaComandos(ctx.listaComandos());
         
-        scopes.dropCurrentScope();
-        tab();
-        output.append("}");
+        closeScope(scopes.getCurrentScope());
 
         return null;
     }
@@ -151,6 +168,8 @@ public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void>{
         output.append(" = ");
         if(notNull(ctx.valor())){
             visitValor(ctx.valor());
+            scopes.getCurrentScope().markInitialized(NOME_VAR);
+
         }else if(ctx.TIPO_VAR().getText().equals("int")){
 
             output.append("0");
@@ -170,18 +189,31 @@ public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void>{
 
     @Override
     public Void visitAtribuicao(AtribuicaoContext ctx) {
-        var varType = scopes.getCurrentScope().verify(ctx.ID().getText());
-        
-        if(varType == UEPBLanguageType.STRING){
-            output.append(String.format("if($s != NULL){free($s);}\n", 
-                ctx.ID().getText()));
-            tab();
-            output.append(String.format("%s = ", ctx.ID().getText()));
+        final var VAR_NAME = ctx.ID().getText();
+        final var VAR_TYPE = scopes.getAllSymbolTable().stream()
+            .filter(e -> e.exists(VAR_NAME))
+            .map(e -> e.verify(VAR_NAME))
+            .findFirst()
+            .orElse(INVALIDO);
+
+        if(VAR_TYPE == UEPBLanguageType.STRING){
+            var NAME_VAR = VAR_NAME;
+            
+            final boolean VAR_WAS_INITIALIZED = scopes.getAllSymbolTable().stream()
+                .anyMatch(t -> t.isInitialized(NAME_VAR));
+
+            if(VAR_WAS_INITIALIZED){
+                output.append(String.format("free(%s);\n", 
+                VAR_NAME));
+                tab();
+            }
+            
+            output.append(String.format("%s = ", VAR_NAME));
             
             visitValor(ctx.valor());
 
-        }else{
-            output.append(String.format("%s = ", ctx.ID().getText()));
+        }else if(VAR_TYPE != INVALIDO){
+            output.append(String.format("%s = ", VAR_NAME));
             visitValor(ctx.valor());
 
         }
@@ -281,9 +313,7 @@ public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void>{
             });
         }
 
-        scopes.dropCurrentScope();
-        tab();
-        output.append("}");
+        closeScope(scopes.getCurrentScope());
 
         return null;
     }
