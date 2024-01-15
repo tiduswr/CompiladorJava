@@ -22,21 +22,25 @@ public class Main {
 
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         UEPBLanguageParser parser = new UEPBLanguageParser(tokens);
-        
         var tree = parser.programa();
 
-        Semantic semantic = new Semantic(true);
-        semantic.visitPrograma(tree);
+        Semantic semantic = new Semantic(false);
+        
+        try{
+            semantic.visitPrograma(tree);
 
-        System.out.println("\n\n######### RELATÓRIO DE ERROS SEMÂNTICOS\n");
-        Utils.semanticErrors.forEach(System.out::println);
-
-        if(Utils.semanticErrors.isEmpty()){
-            var builder = new CodeBuilderC();
-            builder.visitPrograma(tree);
-            try(PrintWriter writer = new PrintWriter(new File("./build/" + args[1] + ".c"))){
-                writer.print(builder.getGeneratedCode());
+            if(Utils.semanticErrors.isEmpty()){
+                var builder = new CodeBuilderC();
+                builder.visitPrograma(tree);
+                try(PrintWriter writer = new PrintWriter(new File("./build/" + args[1] + ".c"))){
+                    writer.print(builder.getGeneratedCode());
+                }
+            }else{
+                System.out.println("\n\n######### RELATÓRIO DE ERROS SEMÂNTICOS\n");
+                Utils.semanticErrors.forEach(System.out::println);
             }
+        }catch(Exception ex){
+            System.out.println("\nPor causa dos erros anteriores, não foi possível inicializar o analisador semântico corretamente.");
         }
     }
 }
