@@ -39,6 +39,17 @@ public class Scope {
         return stack;
     }
 
+    public Integer findEnderecoInGlobalScope(String id){
+        for(var table : getAllSymbolTable()){
+            var endereco = table.retrieveEndereco(id);
+            if(endereco != null){
+                return endereco;
+            }
+        }
+
+        return null;
+    }
+
     public int identationOffset(){
         return value + 1;
     }
