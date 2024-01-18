@@ -26,6 +26,8 @@ As seguintes instruções são aceitas pela P-Code Machine:
 | `neq`     | Retira um valor `X` do topo da pilha, retira outro valor `Y` do topo da pilha, e armazena `X != Y` (um booleano) no topo da pilha |
 | `and`     | Retira um valor booleano `X` do topo da pilha, retira outro valor booleano `Y` do topo da pilha, e armazena `X && Y` (um booleano) no topo da pilha |
 | `or`      | Retira um valor booleano `X` do topo da pilha, retira outro valor booleano `Y` do topo da pilha, e armazena `X || Y` (um booleano) no topo da pilha |
+| `toi`      | Retira um valor float `X` do topo da pilha e insere `X` transformado em inteiro no topo da pilha, similar a FIST (Floating Point Integer Store) no Assembly x86 |
+| `tof`      | Retira um valor int `X` do topo da pilha e insere `X` transformado em float no topo da pilha, similar a FILD (Floating Point Integer Load) no Assembly x86 |
 | `lab L`   | Sem efeito na execução. Apenas marca uma posição de código com um rótulo `L` |
 | `ujp L`   | Salta para a instrução marcada com `L` |
 | `fjp L`   | Retira um valor booleano `X` do topo da pilha e caso seja falso, salta para a instrução marcada com `L`. Caso seja verdadeiro, não executa nada. |
