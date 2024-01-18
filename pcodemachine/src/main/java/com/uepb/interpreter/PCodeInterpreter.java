@@ -159,25 +159,33 @@ public class PCodeInterpreter {
         return test;
     }
 
-    private void handleBinaryOperation(String operator) {
-        int op1 = Integer.parseInt(stack.pop());
-        int op2 = Integer.parseInt(stack.pop());
-        int result = 0;
+    private void handleBinaryOperation(String operator){
+
+        final String t1 = stack.pop();
+        final String t2 = stack.pop();
+
+        Number left = GenericCalculator.parseNumber(t1);
+        Number right = GenericCalculator.parseNumber(t2);
+
+        String result = "";
         switch (operator) {
-            case "*":
-                result = op1 * op2;
-                break;
-            case "/":
-                result = op2 / op1;
-                break;
             case "+":
-                result = op1 + op2;
+                result = GenericCalculator.sum(left, right);
                 break;
             case "-":
-                result = op2 - op1;
+                result = GenericCalculator.sub(right, left);
+                break;
+            case "*":
+                result = GenericCalculator.mult(left, right);
+                break;
+            case "/":
+                result = GenericCalculator.div(right, left);
+                break;
+            default:
                 break;
         }
-        stack.push(Integer.toString(result));
+
+        stack.push(result);
     }
 
     private void handleSto() {
