@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.uepb.UEPBLanguageBaseVisitor;
+import com.uepb.UEPBLanguageParser.AskFuncContext;
 import com.uepb.UEPBLanguageParser.AtribuicaoContext;
 import com.uepb.UEPBLanguageParser.ComandoContext;
 import com.uepb.UEPBLanguageParser.DeclaracaoContext;
@@ -14,9 +15,12 @@ import com.uepb.UEPBLanguageParser.ExprAritContext;
 import com.uepb.UEPBLanguageParser.ExprRelContext;
 import com.uepb.UEPBLanguageParser.FatorAritContext;
 import com.uepb.UEPBLanguageParser.ListaComandosContext;
+import com.uepb.UEPBLanguageParser.PrintFuncContext;
 import com.uepb.UEPBLanguageParser.ProgramaContext;
 import com.uepb.UEPBLanguageParser.TermoAritContext;
 import com.uepb.UEPBLanguageParser.TermoRelContext;
+import com.uepb.UEPBLanguageParser.ToFloatFuncContext;
+import com.uepb.UEPBLanguageParser.ToIntFuncContext;
 import com.uepb.UEPBLanguageParser.ValorContext;
 import com.uepb.semantic.Scope;
 
@@ -234,6 +238,71 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
             }
 
         }
+    }
+
+    @Override
+    public String visitValor(ValorContext ctx) {
+        
+        if(notNull(ctx.STRING())){
+            throw new RuntimeException("Strings não são suportadas na P-Code Machine");
+        }else if(notNull(ctx.exprArit())){
+            return visitExprArit(ctx.exprArit());
+        }else if(notNull(ctx.toIntFunc())){
+            return visitToIntFunc(ctx.toIntFunc());
+        }else if(notNull(ctx.toFloatFunc())){
+            return visitToFloatFunc(ctx.toFloatFunc());
+        }else{
+            return visitAskFunc(ctx.askFunc());
+        }
+
+    }
+
+    @Override
+    public String visitToIntFunc(ToIntFuncContext ctx) {
+        
+        if(notNull(ctx.valor())){
+            visitValor(ctx.valor());
+            return "toi\n";
+        }
+
+        return null;    
+    }
+
+    @Override
+    public String visitToFloatFunc(ToFloatFuncContext ctx) {
+        
+        if(notNull(ctx.valor())){
+            visitValor(ctx.valor());
+            return "tof\n";
+        }
+
+        return null;
+        
+    }
+
+    @Override
+    public String visitPrintFunc(PrintFuncContext ctx) {
+        
+        if(notNull(ctx.valor())){
+            visitValor(ctx.valor());
+            return "wri\n";
+        }
+
+        return null;
+
+    }
+
+    @Override
+    public String visitAskFunc(AskFuncContext ctx) {
+        return "rdi\n";
+    }
+
+    @Override
+    public String visitAtribuicao(AtribuicaoContext ctx) {
+        int endereco = scopes
+            .findEnderecoInGlobalScope(ctx.ID().getText());
+        
+        return "lda " + endereco;
     }
 
 }
