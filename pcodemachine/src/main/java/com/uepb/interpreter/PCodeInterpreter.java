@@ -126,6 +126,12 @@ public class PCodeInterpreter {
                 case "or":
                     handleLogicalOperation("||");
                     break;
+                case "toi":
+                    handleConversion("int");
+                    break;
+                case "tof":
+                    handleConversion("float");
+                    break;
                 case "lab":
                     // do nothing
                     break;
@@ -186,6 +192,18 @@ public class PCodeInterpreter {
         }
 
         stack.push(result);
+    }
+
+    private void handleConversion(String to){
+        final String stackTop = stack.pop();
+
+        if(to.equals("int")){
+            int top = GenericCalculator.parseNumber(stackTop).intValue();
+            stack.push(Integer.toString(top));
+        }else if(to.equals("float")){
+            float top = GenericCalculator.parseNumber(stackTop).floatValue();
+            stack.push(Float.toString(top));
+        }
     }
 
     private void handleSto() {
