@@ -154,8 +154,7 @@ public class PCodeInterpreter {
             currentInstruction--;
             waitForInput = true;
         } else {
-            int address = Integer.parseInt(stack.pop());
-            memory[address] = input;
+            stack.push(input);
             input = null;
         }
     }
@@ -273,9 +272,7 @@ public class PCodeInterpreter {
 
     public String getStackDescription() {
         var retorno = String.join(" < ", stack);
-        var stackCopy = new ArrayList<>(stack);
-        Collections.reverse(stackCopy);
-        return retorno.isBlank() ? "" : " < " + String.join(" < ", stackCopy);
+        return retorno.isBlank() ? "" : " < " + String.join(" < ", stack);
     }
 
     public String getMemoryDescription() {

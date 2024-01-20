@@ -8,7 +8,7 @@ As seguintes instruções são aceitas pela P-Code Machine:
 
 | Instrução | Descrição |
 |-----------|-----------|
-| `rdi`     | Retira um endereço `A` do topo da pilha, lê um valor `X` da entrada e armazena `X` na memória, no endereço `A` |
+| `rdi`     | Lê um valor `X` da entrada e armazena `X` no topo da pilha |
 | `wri`     | Retira um valor `X` do topo da pilha e escreve `X` na saída |
 | `lda A`   | Insere o endereço `A` no topo da pilha |
 | `ldc C`   | Insere a constante `C` no topo da pilha |

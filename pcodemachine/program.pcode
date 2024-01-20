@@ -1,13 +1,45 @@
 lda 0
 rdi
+toi
+sto
 lda 1
 rdi
-ldc 2
+toi
+sto
+lod 1
+ldc 0
+equ
+fjp L0
+lda 2
+ldc 1.0
+toi
+sto
+ujp L1
+lab L0
+lda 2
+lod 0
+sto
+lda 3
+ldc 1
+sto
+lab L2
+lod 3
+lod 1
+let
+fjp L3
+lda 2
+lod 2
 lod 0
 mpi
-lod 1
-ldc 3
-sbi
+sto
+lda 3
+lod 3
+ldc 1
 adi
+sto
+ujp L2
+lab L3
+lab L1
+lod 2
 wri
 stp
