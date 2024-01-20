@@ -1,38 +1,23 @@
 package com.uepb.geradores;
 
-import org.antlr.v4.parse.ANTLRParser.range_return;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.uepb.UEPBLanguageBaseVisitor;
-import com.uepb.UEPBLanguageParser.AskFuncContext;
-import com.uepb.UEPBLanguageParser.AtribuicaoContext;
-import com.uepb.UEPBLanguageParser.ComandoContext;
-import com.uepb.UEPBLanguageParser.DeclaracaoContext;
-import com.uepb.UEPBLanguageParser.EscopoContext;
-import com.uepb.UEPBLanguageParser.EscopoWhileContext;
-import com.uepb.UEPBLanguageParser.ExprAritContext;
-import com.uepb.UEPBLanguageParser.ExprRelContext;
-import com.uepb.UEPBLanguageParser.FatorAritContext;
-import com.uepb.UEPBLanguageParser.ListaComandosContext;
-import com.uepb.UEPBLanguageParser.PrintFuncContext;
-import com.uepb.UEPBLanguageParser.ProgramaContext;
-import com.uepb.UEPBLanguageParser.TermoAritContext;
-import com.uepb.UEPBLanguageParser.TermoRelContext;
-import com.uepb.UEPBLanguageParser.ToFloatFuncContext;
-import com.uepb.UEPBLanguageParser.ToIntFuncContext;
-import com.uepb.UEPBLanguageParser.ValorContext;
+import com.uepb.UEPBLanguageParser.*;
 import com.uepb.semantic.Scope;
 
-public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
+public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String> implements Gerador<String>{
     
     private final Scope scopes;
     private final PCodeEndereco enderecos;
     private int label = 0;
+    private String lastCode;
 
     public CodeBuildPCode(boolean debugMode, int MEMORY_SIZE){
         enderecos = new PCodeEndereco(MEMORY_SIZE);
         scopes = new Scope(debugMode);
+        lastCode = "";
     }
 
     public void dropCurrentScope(){
@@ -41,6 +26,14 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
             enderecos.freeEndereco(scopeEnderecos);
 
         scopes.dropCurrentScope();
+    }
+
+    private boolean notNull(ParserRuleContext rule){
+        return rule != null;
+    }
+
+    private boolean notNull(TerminalNode node){
+        return node != null;
     }
 
     @Override
@@ -52,6 +45,7 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
         code += "stp\n";
         dropCurrentScope();
 
+        lastCode = code;
         return code;
     }
 
@@ -89,14 +83,6 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
         return code.toString();
     }
 
-    private boolean notNull(ParserRuleContext rule){
-        return rule != null;
-    }
-
-    private boolean notNull(TerminalNode node){
-        return node != null;
-    }
-
     @Override
     public String visitComando(ComandoContext ctx) {
 
@@ -124,9 +110,20 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
 
     @Override
     public String visitDeclaracao(DeclaracaoContext ctx) {
+        StringBuilder code = new StringBuilder("");
         scopes.getCurrentScope().insert(ctx.ID().getText(), 
             enderecos.getNextFreeEndereco());
-        return null;
+
+        if(notNull(ctx.valor())){    
+            int endereco = scopes
+                .findEnderecoInGlobalScope(ctx.ID().getText());
+            
+            code.append("lda " + endereco + "\n");
+            code.append(visitValor(ctx.valor()));
+            code.append("sto\n");
+        }
+
+        return code.toString();
     }
 
     @Override
@@ -177,16 +174,32 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
 
     @Override
     public String visitFatorArit(FatorAritContext ctx) {
+        String comand;
+
         if(notNull(ctx.NUM_INT())){
-            return "ldc " + ctx.NUM_INT().getText() + "\n";
+            comand = "ldc " + ctx.NUM_INT().getText() + "\n";
         }else if(notNull(ctx.NUM_REAL())){
-            return "ldc" + ctx.NUM_REAL().getText() + "\n";
+            comand = "ldc " + ctx.NUM_REAL().getText() + "\n";
         }else if(notNull(ctx.ID())){
             int endereco = scopes.findEnderecoInGlobalScope(ctx.ID().getText());
-            return "lod " + endereco + "\n";
+            comand = "lod " + endereco + "\n";
         }else{
-            return visitExprArit(ctx.exprArit());
+            comand = visitExprArit(ctx.exprArit());
         }
+
+        
+        if(notNull(ctx.OP_ARIT_1())){
+            final String sinal = ctx.OP_ARIT_1().getText();
+
+            if(sinal.equals("+")){
+                comand = "ldc -1\nmpi\n";
+            }else if(sinal.equals("-")){
+                comand = "ldc 1\nmpi\n";
+            }
+            
+        }
+        
+        return comand;
     }
 
     @Override
@@ -259,36 +272,19 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
 
     @Override
     public String visitToIntFunc(ToIntFuncContext ctx) {
-        
-        if(notNull(ctx.valor())){
-            visitValor(ctx.valor());
-            return "toi\n";
-        }
+        return visitValor(ctx.valor()) + "toi\n";
 
-        return null;    
     }
 
     @Override
     public String visitToFloatFunc(ToFloatFuncContext ctx) {
-        
-        if(notNull(ctx.valor())){
-            visitValor(ctx.valor());
-            return "tof\n";
-        }
-
-        return null;
+        return visitValor(ctx.valor()) + "tof\n";
         
     }
 
     @Override
     public String visitPrintFunc(PrintFuncContext ctx) {
-        
-        if(notNull(ctx.valor())){
-            visitValor(ctx.valor());
-            return "wri\n";
-        }
-
-        return null;
+        return visitValor(ctx.valor()) + "wri\n";
 
     }
 
@@ -299,10 +295,62 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String>{
 
     @Override
     public String visitAtribuicao(AtribuicaoContext ctx) {
+        StringBuilder code = new StringBuilder();
+        
         int endereco = scopes
             .findEnderecoInGlobalScope(ctx.ID().getText());
         
-        return "lda " + endereco;
+        code.append("lda " + endereco + "\n");
+        code.append(visitValor(ctx.valor()));
+        code.append("sto\n");
+
+        return code.toString();
+    }
+
+    @Override
+    public String visitIfDecl(IfDeclContext ctx) {
+        final StringBuilder code = new StringBuilder();
+        final int LABEL1 = this.label++;
+        final int LABEL2 = this.label++;
+
+        code.append(visitExprRel(ctx.exprRel()));
+        code.append("fjp L").append(LABEL1 + "\n");
+        code.append(visitEscopo(ctx.escopo()));
+
+        if(notNull(ctx.ifTail())){
+            code.append("ujp L").append(LABEL2 + "\n");
+            code.append("lab L").append(LABEL1 + "\n");
+            code.append(visitIfTail(ctx.ifTail()));
+            code.append("lab L").append(LABEL2+ "\n");
+        }
+
+        return code.toString();
+    }
+
+    @Override
+    public String visitIfTail(IfTailContext ctx) {
+        return visitEscopo(ctx.escopo());
+    }
+
+    @Override
+    public String visitWhileDecl(WhileDeclContext ctx) {
+        final StringBuilder code = new StringBuilder();
+        final int LABEL1 = this.label++;
+        final int LABEL2 = this.label++;
+
+        code.append("lab L").append(LABEL1+"\n");
+        code.append(visitExprRel(ctx.exprRel()));
+        code.append("fjp L").append(LABEL2+"\n");
+        code.append(visitEscopoWhile(ctx.escopoWhile()));
+        code.append("ujp L").append(LABEL1+"\n");
+        code.append("lab L").append(LABEL2+"\n");   
+
+        return code.toString();
+    }
+
+    @Override
+    public String getGeneratedCode() {
+        return lastCode;
     }
 
 }

@@ -15,5 +15,4 @@ unless(potencia == 0){
     };
 };
 
-show("O resultado é ");
 show(resultado);

@@ -19,7 +19,7 @@ import com.uepb.semantic.SymbolTable;
 import com.uepb.semantic.Utils;
 import com.uepb.semantic.SymbolTable.UEPBLanguageType;
 
-public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void>{
+public class CodeBuilderC extends UEPBLanguageBaseVisitor<Void> implements Gerador<Void>{
     
     private final StringBuilder output;
     private final Scope scopes;

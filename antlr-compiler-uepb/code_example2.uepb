@@ -1,0 +1,13 @@
+spawn arg : int = toInt(ask());
+spawn fat : int = arg;
+
+unless(arg == 0){
+    fat = 1;
+}do{
+    during(arg > 1){
+        fat = fat * (arg - 1);
+        arg = arg - 1;
+    };
+};
+
+show(fat);
