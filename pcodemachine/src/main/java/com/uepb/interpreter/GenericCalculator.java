@@ -40,16 +40,17 @@ public class GenericCalculator {
         return !(casasDecimais > 0f);
     }
 
-    public static Number parseNumber(String number){
-        try{
-            return Integer.parseInt(number);
-        }catch(NumberFormatException ex){
-            try{
-                return Float.parseFloat(number);
-            }catch(NumberFormatException ex2){
-                throw new RuntimeException("Operações aritiméticas só são feitas em (int<>int, float<>float)");
-            }
-        }
+    public static Number parseNumber(String number) throws NumberFormatException {
+        boolean isNumber = number.matches("[+-]?[0-9]+([.][0-9]+)?");
+        boolean isFloat = number.contains(".");
+
+        if(!isNumber)
+            throw new NumberFormatException("As operações aceitam apenas 'int' e 'float'");
+
+        if(isFloat)
+            return Float.parseFloat(number);
+        
+        return Integer.parseInt(number);
     }
 
 }
