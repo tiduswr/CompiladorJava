@@ -10,13 +10,9 @@ import com.uepb.UEPBLanguageParser.FatorAritContext;
 import com.uepb.UEPBLanguageParser.TermoAritContext;
 import com.uepb.UEPBLanguageParser.TermoRelContext;
 import com.uepb.UEPBLanguageParser.ValorContext;
-import com.uepb.semantic.SymbolTable.UEPBLanguageType;
 
 import static com.uepb.semantic.SymbolTable.UEPBLanguageType;
-import static com.uepb.semantic.SymbolTable.UEPBLanguageType.INVALIDO;
-import static com.uepb.semantic.SymbolTable.UEPBLanguageType.INTEIRO;
-import static com.uepb.semantic.SymbolTable.UEPBLanguageType.FLOAT;
-import static com.uepb.semantic.SymbolTable.UEPBLanguageType.STRING;
+import static com.uepb.semantic.SymbolTable.UEPBLanguageType.*;
 
 public class Utils {
     
@@ -32,70 +28,57 @@ public class Utils {
     public static UEPBLanguageType verifyType(Scope scope, ValorContext ctx){
         if(ctx.STRING() != null || ctx.askFunc() != null){
             return STRING;
-        }else if(ctx.toFloatFunc() != null){
+        } else if(ctx.toFloatFunc() != null){
             return FLOAT;
-        }else if(ctx.toIntFunc() != null){
+        } else if(ctx.toIntFunc() != null){
             return INTEIRO;
-        }else{
+        } else {
             return verifyType(scope, ctx.exprArit());
         }
     }
 
     public static UEPBLanguageType verifyType(Scope scope, ExprAritContext ctx){
-
-        UEPBLanguageType retorno = null;
-        for(var TERMO : ctx.termoArit()){
-            UEPBLanguageType aux = verifyType(scope, TERMO);
-
-            if(retorno == null){
-                retorno = aux;
-            }else if(retorno != aux && aux != INVALIDO){
-                insertSemanticError(ctx.start, "A expressão " + ctx.getText() + " contém tipos inválidos");
-                retorno = INVALIDO;
-            }
-        }
-
-        return retorno;
+        return ctx.termoArit().stream()
+            .map(termo -> verifyType(scope, termo))
+            .reduce(null, (acc, curr) -> {
+                if (acc == null) return curr;
+                if (acc != curr && curr != INVALIDO) {
+                    insertSemanticError(ctx.start, "A expressão " + ctx.getText() + " contém tipos inválidos");
+                    return INVALIDO;
+                }
+                return acc;
+            });
     }
 
     public static UEPBLanguageType verifyType(Scope scope, TermoAritContext ctx) {
-        
-        UEPBLanguageType retorno = null;
-        for(var FATOR : ctx.fatorArit()){
-            UEPBLanguageType aux = verifyType(scope, FATOR);
-
-            if(retorno == null){
-                retorno = aux;
-            }else if(retorno != aux && aux != INVALIDO){
-                insertSemanticError(ctx.start, "A expressão " + ctx.getText() + " contém tipos inválidos");
-                retorno = INVALIDO;
-            }
-        }
-
-        return retorno;
+        return ctx.fatorArit().stream()
+            .map(fator -> verifyType(scope, fator))
+            .reduce(null, (acc, curr) -> {
+                if (acc == null) return curr;
+                if (acc != curr && curr != INVALIDO) {
+                    insertSemanticError(ctx.start, "A expressão " + ctx.getText() + " contém tipos inválidos");
+                    return INVALIDO;
+                }
+                return acc;
+            });
     }
 
     public static UEPBLanguageType verifyType(Scope scope, FatorAritContext ctx) {
-        
         if(ctx.NUM_INT() != null){
             return INTEIRO;
-        }else if(ctx.NUM_REAL() != null){
+        } else if(ctx.NUM_REAL() != null){
             return FLOAT;
-        }else if(ctx.exprArit() != null){
+        } else if(ctx.exprArit() != null){
             return verifyType(scope, ctx.exprArit());
-        }else{
+        } else {
             String varName = ctx.ID().getText();
-
             var allSymbols = scope.getAllSymbolTable();
-
             if(!allSymbols.stream().anyMatch(t -> t.exists(varName))){
                 insertSemanticError(ctx.ID().getSymbol(), "A variável " + ctx.getText() + " não foi declarada");
                 return INVALIDO;
             }
-
             return verifyType(allSymbols, varName);
         }
-
     }
 
     public static UEPBLanguageType verifyType(List<SymbolTable> allSymbols, String varName) {
@@ -103,18 +86,15 @@ public class Utils {
             .map(table -> table.verify(varName))
             .filter(type -> type != null)
             .findFirst()
-            .get(); // Seguro, pois a regra do contexto de FATOR verifica se existe ao menos 1
+            .get();
     }
 
     public static UEPBLanguageType verifyType(Scope scopes, TermoRelContext termoRel) {
         var firstValor = Utils.verifyType(scopes, termoRel.v1);
         var secondValor = Utils.verifyType(scopes, termoRel.v2);
-
         if((firstValor != secondValor) || (firstValor == STRING || secondValor == STRING))
-                Utils.insertSemanticError(termoRel.OP_REL().getSymbol(), "A expressão relacional " 
-                + termoRel.getText() + " precisa ser entre elementos do mesmo tipo e não ser uma STRING");
-
+            Utils.insertSemanticError(termoRel.OP_REL().getSymbol(), "A expressão relacional " 
+            + termoRel.getText() + " precisa ser entre elementos do mesmo tipo e não ser uma STRING");
         return null;
     }
-
 }
