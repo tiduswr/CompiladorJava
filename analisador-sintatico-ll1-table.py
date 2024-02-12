@@ -16,13 +16,13 @@ def parse(w, table, start):
         elif X.islower():
             print("Erro: Não é possível desempilhar terminal")
             return
-        elif not _checkTable(table, X, a, w, stack, indice):
+        elif not _checkTable(table, X, a, stack):
             return
         
     print(f">> Pilha: {''.join(reversed(stack))} Entrada: {''.join(w[indice:])}")
     print('Match $ == $ -> Cadeia reconhecida!')
 
-def _checkTable(table, X, a, w, stack, indice):
+def _checkTable(table, X, a, stack):
     try:
         production = table[X, a]
     except KeyError:
