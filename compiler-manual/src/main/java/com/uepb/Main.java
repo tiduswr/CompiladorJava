@@ -8,7 +8,7 @@ import com.uepb.parser.Parser;
 public class Main {
     public static void main(String[] args) throws IOException {
         
-        Lexer lexer = new Lexer(args[0], true);
+        Lexer lexer = new Lexer("code_example.uepb", true);
         Parser parser = new Parser(lexer);
         parser.parse();
         

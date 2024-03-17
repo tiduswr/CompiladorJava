@@ -1,7 +1,7 @@
 spawn x : int;
 spawn str : string = "Aquele seu \"Amigo\" é engraçado";
 
-x = -23*(3+5.2);
+x = -23*(3+-5.2);
 
 unless(x != 0){
     during(x >= 0){

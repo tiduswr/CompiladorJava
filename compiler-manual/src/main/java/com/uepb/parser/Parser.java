@@ -1,5 +1,6 @@
 package com.uepb.parser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,43 +14,54 @@ public class Parser {
     private static final int BUFFER_SIZE = 10;
     private List<Token> buffer;
     Lexer lexer;
-    boolean eof = false;
 
-    public Parser(Lexer lexer){
+    public Parser(Lexer lexer) throws IOException {
         this.lexer = lexer;
         buffer = new ArrayList<>();
         confirmToken();
     }
 
-    private void confirmToken(){
+    private void confirmToken() throws IOException {
     
         if(buffer.size() > 0) buffer.remove(0);
         
-        while(buffer.size() < BUFFER_SIZE && !eof){
+        while(buffer.size() < BUFFER_SIZE){
             var next = lexer.readNextToken();
-
             buffer.add(next);
 
-            if(next.type() == TokenType.EOF){
-                eof = true;
-            }
-
+            if(next.type() == TokenType.EOF) 
+                break;
         }
-        System.out.println("Lido: " + lookAhead(1));
     
     }
 
     private Token lookAhead(int k) {
         if(buffer.isEmpty()) return null;
+
         return k-1 >= buffer.size() ? buffer.get(buffer.size()-1) : buffer.get(k-1);
     }
 
+    private void printMatchToken(Token t){
+        PrintUtils.printCurrentMethod();
+        PrintUtils.printlnGreen("✔ Match " + t + "!");
+        if(t.type() == TokenType.SEMICOLON) 
+            System.out.println();
+    }
+
     private void match(TokenType type){
-        if(lookAhead(1).type() == type){
-            System.out.println("Match: " + lookAhead(1));
-            confirmToken();
+        var la = lookAhead(1);
+
+        if(la.type() == type){
+            printMatchToken(la);
+
+            try{
+                confirmToken();
+            }catch(IOException ex){
+                System.out.println(ex.getLocalizedMessage());
+            }
+
         }else{
-            throw new SyntaxError(lookAhead(1), type);
+            throw new SyntaxError(la, type);
         }
     }
 
@@ -57,13 +69,13 @@ public class Parser {
         prog();
     }
 
-    // prog: listaComandos;
+    // prog: listaComandos EOF;
     private void prog(){
         listaComandos();
         match(TokenType.EOF);
     }
     
-    // listaComandos: (comando ';')*;
+    // listaComandos: comando*;
     private void listaComandos(){
         final var la = lookAhead(1).type();
         final List<TokenType> tokens = List.of(
@@ -77,14 +89,12 @@ public class Parser {
         );
 
         if(tokens.contains(la)){
-            comando(); 
-            match(TokenType.SEMICOLON); 
+            comando();  
             listaComandos();
         }
-
     }
 
-    // comando: declaracao | atribuicao | if-decl | while | imprimir;
+    // comando: (declaracao | atribuicao | if-decl | while | imprimir) ';';
     private void comando(){
         final var la = lookAhead(1).type();
 
@@ -106,6 +116,9 @@ public class Parser {
             throw new SyntaxError(lookAhead(1), TokenType.PC_VAR, TokenType.IDENTIFIER,
                 TokenType.PC_IF, TokenType.PC_WHILE, TokenType.PC_PRINT);
         }
+
+
+        match(TokenType.SEMICOLON);
     }
 
     // tipo: 'int' | 'float' | 'string';
@@ -121,8 +134,7 @@ public class Parser {
         }else{
             throw new SyntaxError(lookAhead(1), TokenType.PC_INT, 
                 TokenType.PC_FLOAT, TokenType.PC_STRING);
-        }
-        
+        }        
     }
 
     // expr_arit:   expr_arit + expr_arit |
@@ -151,7 +163,6 @@ public class Parser {
             expr_arit_subRegra1(); 
             expr_arit2();
         }
-
     }
 
     // expr_arit_subRegra1: ( '+' termoArit | '-' termoArit )
@@ -193,7 +204,6 @@ public class Parser {
             termoArit2_subRegra1(); 
             termoArit2();
         }
-
     }
     // termoArit2_subRegra1: ('*' fatorArit | '/' fatorArit)
     private void termoArit2_subRegra1(){
@@ -214,6 +224,7 @@ public class Parser {
     private void fatorArit(){
         sinal();
 
+
         final var la = lookAhead(1).type();
         if(la == TokenType.IDENTIFIER){
             match(TokenType.IDENTIFIER);
@@ -229,7 +240,6 @@ public class Parser {
             throw new SyntaxError(lookAhead(1), TokenType.INT, TokenType.IDENTIFIER,
                 TokenType.FLOAT, TokenType.OPEN_PAREN);
         }
-
     }
 
     // sinal: '-' | '+' | NULL
@@ -241,7 +251,6 @@ public class Parser {
         }else if(la == TokenType.OP_SUM){
             match(TokenType.OP_SUBTRACT);
         }
-
     }
     
     // valor: expr_arit | STRING;
@@ -253,7 +262,6 @@ public class Parser {
         }else{
             expr_arit();
         }
-
     }
     
     // declaracao: 'var' IDENTIFICADOR ':' tipo declaracaoAtribuicao;
@@ -273,7 +281,6 @@ public class Parser {
             match(TokenType.OP_ASSIGNMENT); 
             valor();
         }
-
     }
 
     // atribuicao: IDENTIFICADOR '=' valor;
@@ -287,7 +294,6 @@ public class Parser {
         }else{
             throw new SyntaxError(lookAhead(1), TokenType.IDENTIFIER);
         }
-
     }
 
     // expr_rel: expr_rel op_bool termo_rel | termo_rel;
@@ -319,11 +325,9 @@ public class Parser {
             termo_rel();
             expr_rel2();
         }
-
     }
 
     //termo_rel: expr_arit OP_REL expr_arit | '(' expr_arit ')'
-    //Falta implementar o '(' expr_arit ')'
     private void termo_rel(){
         expr_arit();
         op_rel();
@@ -381,7 +385,6 @@ public class Parser {
             listaComandos(); 
             match(TokenType.CLOSE_BRACE);
         }
-
     }
     
     // while: 'during' '(' expr_rel ')' '{' listaComandos '}';
@@ -393,7 +396,6 @@ public class Parser {
         match(TokenType.OPEN_BRACE);
         listaComandos();
         match(TokenType.CLOSE_BRACE);
-
     }
     
     // imprimir: 'show' '(' valor ')';
@@ -411,6 +413,7 @@ public class Parser {
         match(TokenType.CLOSE_PAREN);
     }
     
+    // break: 'break'
     private void break_decl() {
         match(TokenType.PC_BREAK);
     }

@@ -8,18 +8,18 @@ import com.uepb.token.exceptions.TokenNotRecognizedException;
 
 public class Lexer {
     
-    private final DoubleBufferReader reader;
+    private final CharBuffer reader;
     private final boolean ignoreWhiteSpace;
 
     public Lexer(String programSource, boolean ignoreWhiteSpace) throws IOException{
         this.ignoreWhiteSpace = ignoreWhiteSpace;
-        reader = new DoubleBufferReader(programSource);
+        reader = new CharBuffer(programSource);
     }
 
-    public Token readNextToken() {
+    public Token readNextToken() throws IOException {
         int readedChar;
 
-        while((readedChar = reader.readNextChar()) != DoubleBufferReader.FILE_END){
+        while((readedChar = reader.readNextChar()) != CharBuffer.FILE_END){
             char c = (char) readedChar;
 
             // Ignora espaços em branco e quebras de linha
@@ -48,7 +48,7 @@ public class Lexer {
         return new Token(TokenType.EOF, null);
     }
 
-    private Token readSpecialCharacters(char c) {
+    private Token readSpecialCharacters(char c) throws IOException {
 
         switch(c){
             case '>':
@@ -76,31 +76,32 @@ public class Lexer {
 
     }
 
-    private Token binaryCheck(DoubleBufferReader reader, char curChar, 
-        char possibleNextChar, TokenType ifTrue, TokenType ifNot) {
+    private Token binaryCheck(CharBuffer reader, char curChar, 
+        char possibleNextChar, TokenType ifTrue, TokenType ifNot) throws IOException {
 
         StringBuilder operator = new StringBuilder("" + curChar);
 
-        if(reader.readNextChar() == possibleNextChar){
+        char c = (char) reader.readNextChar();
+        if(c == possibleNextChar){
 
             operator.append(possibleNextChar);
             return new Token(ifTrue, operator.toString());
 
         }else{
 
-            reader.undo();
+            reader.pushback(c);
             return new Token(ifNot, operator.toString());
 
         }
 
     }
 
-    private Token readString(char initialChar) {
+    private Token readString(char initialChar) throws IOException {
         StringBuilder str = new StringBuilder();
         str.append(initialChar);
     
         int readedChar;
-        while ((readedChar = reader.readNextChar()) != DoubleBufferReader.FILE_END) {
+        while ((readedChar = reader.readNextChar()) != CharBuffer.FILE_END) {
             char c = (char) readedChar;
     
             if (c == '"') {
@@ -128,17 +129,17 @@ public class Lexer {
     }
     
 
-    private Token readIdentifier(char initialChar) {
+    private Token readIdentifier(char initialChar) throws IOException {
         StringBuilder identifier = new StringBuilder();
         identifier.append(initialChar);
 
         int readedChar;
-        while((readedChar = reader.readNextChar()) != DoubleBufferReader.FILE_END){
+        while((readedChar = reader.readNextChar()) != CharBuffer.FILE_END){
             char c = (char) readedChar;
             if(Character.isLetterOrDigit(c)){
                 identifier.append(c);
             }else{
-                reader.undo();
+                reader.pushback(c);
                 break;
             }
         }
@@ -152,13 +153,13 @@ public class Lexer {
         return new Token(type, lexema);
     }
 
-    private Token readNumber(char initialChar) {
+    private Token readNumber(char initialChar) throws IOException {
         StringBuilder number = new StringBuilder();
         number.append(initialChar);
 
         int readedChar;
         boolean hasDecimalPoint = false;
-        while((readedChar = reader.readNextChar()) != DoubleBufferReader.FILE_END){
+        while((readedChar = reader.readNextChar()) != CharBuffer.FILE_END){
             char c = (char) readedChar;
             if(Character.isDigit(c)){
                 number.append(c);
@@ -166,7 +167,7 @@ public class Lexer {
                 number.append(c);
                 hasDecimalPoint = true;
             }else{
-                reader.undo();
+                reader.pushback(c);
                 break;
             }
         }
