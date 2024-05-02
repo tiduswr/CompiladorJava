@@ -44,12 +44,12 @@ public class Main {
             String result = interpreter.step();
 
             if (interpreter.isWaitingForInput()) {
-                System.out.print("\n[OUTPUT] - Aguardando Input: ");
+                System.out.print("\n[Input]: ");
                 String input = scanner.nextLine();
                 interpreter.setInput(input);
             } else {
                 if (result != null && !interpreter.isHalted()) {
-                    System.out.println("\n[OUTPUT] - Resultado: " + result);
+                    System.out.println("\n[Output]: " + result);
                 }
             }
 

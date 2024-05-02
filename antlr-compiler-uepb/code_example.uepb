@@ -1,18 +1,24 @@
 # Calcula a potencia de um numero
 
-spawn num : int = toInt(ask());
-spawn potencia : int = toInt(ask());
+spawn num : int;
+spawn potencia : int;
 spawn resultado : int;
 
+show "Digite o número: ";
+ask num;
+
+show "Digite a potência: ";
+ask potencia;
+
 unless(potencia == 0){
-    resultado = toInt(1.0);
+    resultado = (int) 1.0;
 }do{
     resultado = num;
     spawn aux : int = 1;
     during(aux < potencia){
         resultado = resultado * num;
         aux = aux + 1;
-    };
-};
+    }
+}
 
-show(resultado);
+show resultado;

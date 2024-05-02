@@ -65,7 +65,6 @@ public class Semantic extends UEPBLanguageBaseVisitor<Void>{
         switch (varType) {
             case "int": varTypeToEnum = INTEIRO; break;
             case "float": varTypeToEnum = FLOAT; break;
-            case "string": varTypeToEnum = STRING; break;
             default: break;
         }
 

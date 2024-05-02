@@ -4,34 +4,29 @@ programa: listaComandos EOF;
 
 listaComandos: comando*;
 
-comando: (
-        declaracao      
-        | atribuicao    
+comando:
+        declaracao ';'
+        | atribuicao ';'
         | ifDecl        
         | whileDecl     
-        | printFunc     
-        | askFunc    
-) ';';
+        | print ';'
+        | ask ';'
+        ;
 
 exprArit: termoArit (OP_ARIT_1 termoArit)*;
-
 termoArit: fatorArit (OP_ARIT_2 fatorArit)*;
-
 fatorArit: OP_ARIT_1? (ID | NUM_INT | NUM_REAL | '(' exprArit ')');
 
-valor: exprArit | STRING | askFunc | toIntFunc | toFloatFunc;
+exprRel: termoRel (OP_BOOL outrosTermos+=termoRel)*;
+termoRel:(v1=valor OP_REL v2=valor) | '(' exprRel ')';
+
+valor: exprArit | cast;
 
 declaracao:'spawn' ID ':' TIPO_VAR ('=' valor)?;
 
 atribuicao: ID '=' valor;
 
-exprRel: termoRel (OP_BOOL outrosTermos+=termoRel)*;
-
-termoRel:(v1=valor OP_REL v2=valor) | '(' exprRel ')';
-
-ifDecl: 'unless' '(' exprRel ')' escopo ifTail;
-
-ifTail:  'do' escopo;
+ifDecl: 'unless' '(' exprRel ')' escopoIf=escopo ('do' escopoElse=escopo)?;
 
 whileDecl: 'during' '(' exprRel ')' escopoWhile;
 
@@ -41,13 +36,11 @@ escopoWhile: '{' (whileBreak | comando)* '}';
 
 escopo: '{' listaComandos '}';
 
-printFunc: 'show' '(' valor ')';
+print: 'show' (valor | STRING);
 
-askFunc: 'ask' '(' valor? ')';
+ask: 'ask' ID;
 
-toIntFunc: 'toInt' '(' valor ')';
-
-toFloatFunc: 'toFloat' '(' valor ')';
+cast: '(' TIPO_VAR ')' valor;
 
 PAL_CHAVE: 'spawn'
         | 'unless'
@@ -55,17 +48,20 @@ PAL_CHAVE: 'spawn'
         | 'during'
         | 'show'
         | 'ask'
-        | 'stop';
+        | 'stop'
+        | 'else'
+        | 'if'
+        ;
 
-TIPO_VAR: 'int' | 'float' | 'string';
+TIPO_VAR: 'int' | 'float';
 
 OP_BOOL: 'and' | 'or';
 
-NUM_INT: ('0'..'9')+;
+NUM_INT: [0-9]+;
 
-NUM_REAL: ('0'..'9')+ '.' ('0'..'9')+;
+NUM_REAL: [0-9]+ '.' [0-9]+;
 
-ID: ('a'..'z') ('a'..'z' | 'A'..'Z' | '0'..'9')*;
+ID: [a-z_] [a-z0-9_]*;
 
 fragment ESCAPE : '\\' .;
 STRING: '"' (ESCAPE | ~[\n"])* '"';

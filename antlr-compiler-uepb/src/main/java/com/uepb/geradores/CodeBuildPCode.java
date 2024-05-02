@@ -98,11 +98,11 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String> implements G
         }else if(notNull(ctx.whileDecl())){
             return visitWhileDecl(ctx.whileDecl());
 
-        }else if(notNull(ctx.printFunc())){
-            return visitPrintFunc(ctx.printFunc());
+        }else if(notNull(ctx.print())){
+            return visitPrint(ctx.print());
 
-        }else if(notNull(ctx.askFunc())){
-            return visitAskFunc(ctx.askFunc());
+        }else if(notNull(ctx.ask())){
+            return visitAsk(ctx.ask());
         }
 
         return null;
@@ -118,7 +118,7 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String> implements G
             int endereco = scopes
                 .findEnderecoInGlobalScope(ctx.ID().getText());
             
-            code.append("lda " + endereco + "\n");
+            code.append("lda ").append(endereco).append("\n");
             code.append(visitValor(ctx.valor()));
             code.append("sto\n");
         }
@@ -231,66 +231,60 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String> implements G
         }else{
             String code = visitValor(ctx.v1) + visitValor(ctx.v2);
 
-            switch(ctx.OP_REL().getText()){
+            code += switch (ctx.OP_REL().getText()) {
+                case ">" -> "grt\n";
+                case ">=" -> "gte\n";
+                case "<" -> "let\n";
+                case "<=" -> "lte\n";
+                case "!=" -> "neq\n";
+                case "==" -> "equ\n";
+                default -> null;
+            };
 
-                case ">":
-                    return code += "grt\n";
-                case ">=":
-                    return code += "gte\n";
-                case "<":
-                    return code += "let\n";
-                case "<=":
-                    return code += "gte\n";
-                case "!=":
-                    return code += "neq\n";
-                case "==":
-                    return code += "equ\n";
-                default:
-                    return null;
-
-            }
-
+            return code;
         }
     }
 
     @Override
     public String visitValor(ValorContext ctx) {
         
-        if(notNull(ctx.STRING())){
-            throw new RuntimeException("Strings não são suportadas na P-Code Machine");
-        }else if(notNull(ctx.exprArit())){
+        if(notNull(ctx.exprArit())){
             return visitExprArit(ctx.exprArit());
-        }else if(notNull(ctx.toIntFunc())){
-            return visitToIntFunc(ctx.toIntFunc());
-        }else if(notNull(ctx.toFloatFunc())){
-            return visitToFloatFunc(ctx.toFloatFunc());
-        }else{
-            return visitAskFunc(ctx.askFunc());
+        }else {
+            return visitCast(ctx.cast());
         }
 
     }
 
     @Override
-    public String visitToIntFunc(ToIntFuncContext ctx) {
-        return visitValor(ctx.valor()) + "toi\n";
-
+    public String visitCast(CastContext ctx) {
+        return switch(ctx.TIPO_VAR().getText()){
+            case "int" -> visitValor(ctx.valor()) + "toi\n";
+            case "float" -> visitValor(ctx.valor()) + "tof\n";
+            default -> null;
+        };
     }
 
     @Override
-    public String visitToFloatFunc(ToFloatFuncContext ctx) {
-        return visitValor(ctx.valor()) + "tof\n";
-        
+    public String visitPrint(PrintContext ctx) {
+        if(ctx.STRING() != null){
+            return "ldc " + ctx.STRING().getText() + "\nwri\n";
+        }else{
+            return visitValor(ctx.valor()) + "wri\n";
+        }
     }
 
     @Override
-    public String visitPrintFunc(PrintFuncContext ctx) {
-        return visitValor(ctx.valor()) + "wri\n";
+    public String visitAsk(AskContext ctx) {
+        StringBuilder code = new StringBuilder();
+        int endereco = scopes
+                .findEnderecoInGlobalScope(ctx.ID().getText());
 
-    }
+        code.append("lda ").append(endereco).append("\n");
+        code.append("rdi\n");
+        code.append("sto\n");
 
-    @Override
-    public String visitAskFunc(AskFuncContext ctx) {
-        return "rdi\n";
+        return code.toString();
     }
 
     @Override
@@ -300,7 +294,7 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String> implements G
         int endereco = scopes
             .findEnderecoInGlobalScope(ctx.ID().getText());
         
-        code.append("lda " + endereco + "\n");
+        code.append("lda ").append(endereco).append("\n");
         code.append(visitValor(ctx.valor()));
         code.append("sto\n");
 
@@ -314,22 +308,17 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String> implements G
         final int LABEL2 = this.label++;
 
         code.append(visitExprRel(ctx.exprRel()));
-        code.append("fjp L").append(LABEL1 + "\n");
-        code.append(visitEscopo(ctx.escopo()));
+        code.append("fjp L").append(LABEL1).append("\n");
+        code.append(visitEscopo(ctx.escopoIf));
 
-        if(notNull(ctx.ifTail())){
-            code.append("ujp L").append(LABEL2 + "\n");
-            code.append("lab L").append(LABEL1 + "\n");
-            code.append(visitIfTail(ctx.ifTail()));
-            code.append("lab L").append(LABEL2+ "\n");
+        if(notNull(ctx.escopoElse)){
+            code.append("ujp L").append(LABEL2).append("\n");
+            code.append("lab L").append(LABEL1).append("\n");
+            code.append(visitEscopo(ctx.escopoElse));
+            code.append("lab L").append(LABEL2).append("\n");
         }
 
         return code.toString();
-    }
-
-    @Override
-    public String visitIfTail(IfTailContext ctx) {
-        return visitEscopo(ctx.escopo());
     }
 
     @Override
@@ -338,12 +327,12 @@ public class CodeBuildPCode extends UEPBLanguageBaseVisitor<String> implements G
         final int LABEL1 = this.label++;
         final int LABEL2 = this.label++;
 
-        code.append("lab L").append(LABEL1+"\n");
+        code.append("lab L").append(LABEL1).append("\n");
         code.append(visitExprRel(ctx.exprRel()));
-        code.append("fjp L").append(LABEL2+"\n");
+        code.append("fjp L").append(LABEL2).append("\n");
         code.append(visitEscopoWhile(ctx.escopoWhile()));
-        code.append("ujp L").append(LABEL1+"\n");
-        code.append("lab L").append(LABEL2+"\n");   
+        code.append("ujp L").append(LABEL1).append("\n");
+        code.append("lab L").append(LABEL2).append("\n");
 
         return code.toString();
     }

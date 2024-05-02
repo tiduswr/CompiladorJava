@@ -26,12 +26,9 @@ public class Utils {
     }
 
     public static UEPBLanguageType verifyType(Scope scope, ValorContext ctx){
-        if(ctx.STRING() != null || ctx.askFunc() != null){
-            return STRING;
-        } else if(ctx.toFloatFunc() != null){
-            return FLOAT;
-        } else if(ctx.toIntFunc() != null){
-            return INTEIRO;
+        if(ctx.cast() != null){
+            var TIPO_VAR = ctx.cast().TIPO_VAR().getText();
+            return TIPO_VAR.equals("int") ? INTEIRO : FLOAT;
         } else {
             return verifyType(scope, ctx.exprArit());
         }
@@ -92,9 +89,9 @@ public class Utils {
     public static UEPBLanguageType verifyType(Scope scopes, TermoRelContext termoRel) {
         var firstValor = Utils.verifyType(scopes, termoRel.v1);
         var secondValor = Utils.verifyType(scopes, termoRel.v2);
-        if((firstValor != secondValor) || (firstValor == STRING || secondValor == STRING))
+        if((firstValor != secondValor))
             Utils.insertSemanticError(termoRel.OP_REL().getSymbol(), "A expressão relacional " 
-            + termoRel.getText() + " precisa ser entre elementos do mesmo tipo e não ser uma STRING");
+            + termoRel.getText() + " precisa ser entre elementos do mesmo tipo");
         return null;
     }
 }

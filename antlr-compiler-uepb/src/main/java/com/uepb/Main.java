@@ -50,6 +50,7 @@ public class Main {
                 Utils.semanticErrors.forEach(System.out::println);
             }
         }catch(Exception ex){
+            ex.printStackTrace();
             System.out.println("\nPor causa dos erros anteriores, não foi possível inicializar o analisador semântico corretamente.");
         }
     }

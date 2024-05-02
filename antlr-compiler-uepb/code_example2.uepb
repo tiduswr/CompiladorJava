@@ -1,13 +1,17 @@
-spawn arg : int = toInt(ask());
-spawn fat : int = arg;
+spawn arg : int;
+show "Calcular fatorial para: ";
+ask arg;
 
+spawn fat : int = arg;
 unless(arg == 0){
     fat = 1;
 }do{
     during(arg > 1){
+        show "Loop";
         fat = fat * (arg - 1);
         arg = arg - 1;
-    };
-};
+    }
+}
 
-show(fat);
+show "O calculo do fatorial resultou em: ";
+show fat;
