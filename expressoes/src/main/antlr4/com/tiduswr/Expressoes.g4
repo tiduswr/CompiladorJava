@@ -57,19 +57,23 @@ termo:
 ;
 
 fator:
-	'(' expressao ')' 
+	CS_ABRE_PAR expressao CS_FECHA_PAR 
 	| NUM
 ;
 
 op1: 
-	'+' 
-	| '-'
+	OP_SUM | OP_SUB
 ;
 
 op2: 
-	'*'
-	| '/'
+	OP_DIV | OP_MUL
 ;
 
-NUM: '0'..'9';
-WS: (' ' | '\n' | '\r' | '\t') -> skip;
+OP_SUM: [+];
+OP_MUL: [*];
+OP_DIV: [/];
+OP_SUB: [-];
+CS_ABRE_PAR: [(];
+CS_FECHA_PAR: [)];
+NUM: [0-9]+([.][0-9]+)?;
+WS: [ \t\r\n] -> skip;
