@@ -14,19 +14,28 @@ public class Main {
 
     public static void main(String[] args) {
 
-        if(args.length < 1)
-            throw new RuntimeException("É esperado um arquivo com código p-code no arg[1]");
-        
+        if (args.length < 1) {
+            System.err.println("Uso: java -jar pcode.jar <arquivo_pcode> [debugMode]");
+            System.err.println("  <arquivo_pcode>  - Caminho para o arquivo contendo o código P-code.");
+            System.err.println("  [debugMode]      - (Opcional) true para habilitar o modo de depuração, false para desabilitar (padrão: true).");
+            return;
+        }
+
+        boolean debugMode = true;
+        if (args.length > 1) {
+            debugMode = Boolean.parseBoolean(args[1]);
+        }
+
         StringBuilder program = new StringBuilder();
-        try(FileInputStream fis = new FileInputStream(args[0])){
-            InputStreamReader reader = new InputStreamReader(fis);
-            BufferedReader buffer = new BufferedReader(reader);
+        try (FileInputStream fis = new FileInputStream(args[0]);
+             InputStreamReader reader = new InputStreamReader(fis);
+             BufferedReader buffer = new BufferedReader(reader)) {
 
             String line;
-            while((line = buffer.readLine()) != null){
-                program.append(line + "\n");
+            while ((line = buffer.readLine()) != null) {
+                program.append(line).append("\n");
             }
-        }catch(IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
 
@@ -34,34 +43,39 @@ public class Main {
         PCodeInterpreter interpreter = new PCodeInterpreter(MEMORY_ADRESS_SIZE);
         interpreter.reset(program.toString());
 
-        System.out.println("### Início do Programa:");
+        if (debugMode) System.out.println("### Início do Programa:");
 
         while (!interpreter.isHalted()) {
-            System.out.println("\n#### " + interpreter.getCurrentInstructionInString());
-            System.out.println("Pilha: " + interpreter.getStackDescription());
-            System.out.println("Memória: " + interpreter.getMemoryDescription());
+            if (debugMode) {
+                System.out.println("\n#### " + interpreter.getCurrentInstructionInString());
+                System.out.println("Pilha: " + interpreter.getStackDescription());
+                System.out.println("Memória: " + interpreter.getMemoryDescription());
+            }
 
             String result = interpreter.step();
 
             if (interpreter.isWaitingForInput()) {
-                System.out.print("\n[Input]: ");
+                if(debugMode) System.out.println();
+                System.out.print("[Input]: ");
                 String input = scanner.nextLine();
                 interpreter.setInput(input);
             } else {
                 if (result != null && !interpreter.isHalted()) {
-                    System.out.println("\n[Output]: " + result);
+                    if(debugMode) System.out.println();
+                    System.out.println("[Output]: " + result);
                 }
             }
 
-            // Aguarda um pequeno intervalo para melhor visualização durante a execução
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (debugMode) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
-        System.out.println("\n### Fim do Programa:");
+        if (debugMode) System.out.println("\n### Fim do Programa:");
         scanner.close();
     }
 }
