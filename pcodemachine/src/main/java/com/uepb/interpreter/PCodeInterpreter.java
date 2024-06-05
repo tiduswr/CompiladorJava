@@ -32,6 +32,10 @@ public class PCodeInterpreter {
 
         while (stProgram.hasMoreTokens()) {
             String instruction = stProgram.nextToken();
+
+            if(instruction.startsWith("#"))
+                continue;
+
             instructions.add(instruction);
 
             if (instruction.startsWith("lab")) {
