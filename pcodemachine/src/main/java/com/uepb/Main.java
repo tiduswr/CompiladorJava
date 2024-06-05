@@ -50,12 +50,12 @@ public class Main {
             String result = interpreter.step();
 
             if (interpreter.isWaitingForInput()) {
-                System.out.print("\033[1;92;104m[Aguardando Input]:\033[m ");
+                System.out.print(destacado("[Aguardando entrada]:") + " ");
                 String input = scanner.nextLine();
                 interpreter.setInput(input);
             } else {
                 if (result != null && !interpreter.isHalted()) {
-                    System.out.println("\033[1;92;104m[Output]:\033[m " + result);
+                    System.out.println(destacado("[Saída]:") + " " + result);
                 }
             }
 
@@ -68,6 +68,10 @@ public class Main {
 
         if (debugMode) System.out.println("\n### Fim do Programa:");
         scanner.close();
+    }
+
+    private static String destacado(String str){
+        return "\033[1;92;40m"+str+"\033[m";
     }
 
     private static void waitUi(){
