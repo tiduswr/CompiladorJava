@@ -46,36 +46,35 @@ public class Main {
         if (debugMode) System.out.println("### Início do Programa:");
 
         while (!interpreter.isHalted()) {
-            if (debugMode) {
-                System.out.println("\n#### " + interpreter.getCurrentInstructionInString());
-                System.out.println("Pilha: " + interpreter.getStackDescription());
-                System.out.println("Memória: " + interpreter.getMemoryDescription());
-            }
-
+            if (debugMode) System.out.println("\n#### " + interpreter.getCurrentInstructionInString());   
             String result = interpreter.step();
 
             if (interpreter.isWaitingForInput()) {
-                if(debugMode) System.out.println();
-                System.out.print("[Input]: ");
+                System.out.print("\033[1;92;104m[Aguardando Input]:\033[m ");
                 String input = scanner.nextLine();
                 interpreter.setInput(input);
             } else {
                 if (result != null && !interpreter.isHalted()) {
-                    if(debugMode) System.out.println();
-                    System.out.println("[Output]: " + result);
+                    System.out.println("\033[1;92;104m[Output]:\033[m " + result);
                 }
             }
 
             if (debugMode) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                System.out.println("Pilha: " + interpreter.getStackDescription());
+                System.out.println("Memória: " + interpreter.getMemoryDescription());;
+                waitUi();
             }
         }
 
         if (debugMode) System.out.println("\n### Fim do Programa:");
         scanner.close();
+    }
+
+    private static void waitUi(){
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

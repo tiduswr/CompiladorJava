@@ -49,8 +49,8 @@ public class PCodeInterpreter {
         waitForInput = false;
     }
 
-    public String getCurrentInstructionInString(){
-        return instructions.get(currentInstruction);
+    public String getCurrentInstructionInString() {
+        return currentInstruction < instructions.size() ? instructions.get(currentInstruction) : null;
     }
 
     public void setInput(String input) {
@@ -67,85 +67,101 @@ public class PCodeInterpreter {
 
     public String step() {
         waitForInput = false;
-        if (!halt) {
-            String instruction = instructions.get(currentInstruction++);
-            String instructionValue = getInstructionValue(instruction);
 
-            switch (instruction.substring(0, 3)) {
-                case "rdi":
-                    handleRdi(instructionValue);
-                    break;
-                case "wri":
-                    return handleWri();
-                case "lda":
-                    stack.push(instructionValue);
-                    break;
-                case "ldc":
-                    stack.push(instructionValue);
-                    break;
-                case "lod":
-                    stack.push(memory[Integer.parseInt(instructionValue)]);
-                    break;
-                case "mpi":
-                    handleBinaryOperation("*");
-                    break;
-                case "dvi":
-                    handleBinaryOperation("/");
-                    break;
-                case "adi":
-                    handleBinaryOperation("+");
-                    break;
-                case "sbi":
-                    handleBinaryOperation("-");
-                    break;
-                case "sto":
-                    handleSto();
-                    break;
-                case "grt":
-                    handleComparison(">");
-                    break;
-                case "let":
-                    handleComparison("<");
-                    break;
-                case "gte":
-                    handleComparison(">=");
-                    break;
-                case "lte":
-                    handleComparison("<=");
-                    break;
-                case "equ":
-                    handleComparison("==");
-                    break;
-                case "neq":
-                    handleComparison("!=");
-                    break;
-                case "and":
-                    handleLogicalOperation("&&");
-                    break;
-                case "or":
-                    handleLogicalOperation("||");
-                    break;
-                case "toi":
-                    handleConversion("int");
-                    break;
-                case "tof":
-                    handleConversion("float");
-                    break;
-                case "lab":
-                    // do nothing
-                    break;
-                case "ujp":
-                    jumpTo(instructionValue);
-                    break;
-                case "fjp":
-                    handleFalseJump(instructionValue);
-                    break;
-                case "stp":
-                    halt = true;
-                    return "Fim da execução!";
-            }
+        if (halt)
+            return null;
+
+        String instruction = getCurrentInstructionInString();
+
+        if(instruction == null)
+            return null;
+
+        String instructionValue = getInstructionValue(instruction);
+
+        currentInstruction++;
+        switch (instruction.substring(0, 3)) {
+            case "rdi":
+                handleRdi(instructionValue);
+                break;
+            case "wri":
+                return handleWri();
+            case "lda":
+                stack.push(instructionValue);
+                break;
+            case "ldc":
+                stack.push(instructionValue);
+                break;
+            case "lod":
+                int i = Integer.parseInt(instructionValue);
+                if (i >= MEMORY_ADRESS_SIZE)
+                    throw new RuntimeException("O endereço de memória " + i + " é inválido");
+                stack.push(memory[i]);
+                break;
+            case "mpi":
+                handleBinaryOperation("*");
+                break;
+            case "dvi":
+                handleBinaryOperation("/");
+                break;
+            case "adi":
+                handleBinaryOperation("+");
+                break;
+            case "sbi":
+                handleBinaryOperation("-");
+                break;
+            case "sto":
+                handleSto();
+                break;
+            case "grt":
+                handleComparison(">");
+                break;
+            case "let":
+                handleComparison("<");
+                break;
+            case "gte":
+                handleComparison(">=");
+                break;
+            case "lte":
+                handleComparison("<=");
+                break;
+            case "equ":
+                handleComparison("==");
+                break;
+            case "neq":
+                handleComparison("!=");
+                break;
+            case "and":
+                handleLogicalOperation("&&");
+                break;
+            case "or":
+                handleLogicalOperation("||");
+                break;
+            case "toi":
+                handleConversion("int");
+                break;
+            case "tof":
+                handleConversion("float");
+                break;
+            case "lab":
+                // do nothing
+                break;
+            case "ujp":
+                jumpTo(instructionValue);
+                break;
+            case "fjp":
+                handleFalseJump(instructionValue);
+                break;
+            case "stp":
+                halt = true;
+                return "Fim da execução!";
         }
         return null;
+    }
+
+    private String pop() {
+        if (stack.isEmpty())
+            throw new RuntimeException("A pilha está vazia!");
+        return stack.pop();
     }
 
     private void handleRdi(String instructionValue) {
@@ -159,14 +175,14 @@ public class PCodeInterpreter {
     }
 
     private String handleWri() {
-        var test = stack.pop();
+        var test = pop();
         return test;
     }
 
-    private void handleBinaryOperation(String operator){
+    private void handleBinaryOperation(String operator) {
 
-        final String t1 = stack.pop();
-        final String t2 = stack.pop();
+        final String t1 = pop();
+        final String t2 = pop();
 
         Number left = GenericCalculator.parseNumber(t1);
         Number right = GenericCalculator.parseNumber(t2);
@@ -192,27 +208,27 @@ public class PCodeInterpreter {
         stack.push(result);
     }
 
-    private void handleConversion(String to){
-        final String stackTop = stack.pop();
+    private void handleConversion(String to) {
+        final String stackTop = pop();
 
-        if(to.equals("int")){
+        if (to.equals("int")) {
             int top = GenericCalculator.parseNumber(stackTop).intValue();
             stack.push(Integer.toString(top));
-        }else if(to.equals("float")){
+        } else if (to.equals("float")) {
             float top = GenericCalculator.parseNumber(stackTop).floatValue();
             stack.push(Float.toString(top));
         }
     }
 
     private void handleSto() {
-        String valueToStore = stack.pop();
-        int addressToStore = Integer.parseInt(stack.pop());
+        String valueToStore = pop();
+        int addressToStore = Integer.parseInt(pop());
         memory[addressToStore] = valueToStore;
     }
 
     private void handleComparison(String operator) {
-        int op1 = Integer.parseInt(stack.pop());
-        int op2 = Integer.parseInt(stack.pop());
+        int op1 = Integer.parseInt(pop());
+        int op2 = Integer.parseInt(pop());
         boolean result = false;
         switch (operator) {
             case ">":
@@ -238,8 +254,8 @@ public class PCodeInterpreter {
     }
 
     private void handleLogicalOperation(String operator) {
-        boolean op1 = Boolean.parseBoolean(stack.pop());
-        boolean op2 = Boolean.parseBoolean(stack.pop());
+        boolean op1 = Boolean.parseBoolean(pop());
+        boolean op2 = Boolean.parseBoolean(pop());
         boolean result = false;
         switch (operator) {
             case "&&":
@@ -259,7 +275,7 @@ public class PCodeInterpreter {
     }
 
     private void handleFalseJump(String label) {
-        boolean bValue = Boolean.parseBoolean(stack.pop());
+        boolean bValue = Boolean.parseBoolean(pop());
         if (!bValue) {
             jumpTo(label);
         }
@@ -275,12 +291,12 @@ public class PCodeInterpreter {
     }
 
     public String getMemoryDescription() {
-        List<String> memoryToString = new ArrayList<>();        
+        List<String> memoryToString = new ArrayList<>();
         var nonNullMemoryLocation = Stream.of(memory)
-            .filter(e -> e != null)
-            .toList();
+                .filter(e -> e != null)
+                .toList();
 
-        for(int i = 0; i < nonNullMemoryLocation.size(); i++){
+        for (int i = 0; i < nonNullMemoryLocation.size(); i++) {
             var curMemLoc = nonNullMemoryLocation.get(i);
             memoryToString.add(String.format("[%d]:", i) + curMemLoc);
         }
